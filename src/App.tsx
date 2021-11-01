@@ -1,33 +1,22 @@
 import React, { useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
-import ReactModal from 'react-modal'
 import { BrowserRouter as Router, Switch, Route, NavLink } from 'react-router-dom'
 import Create from './pages/Create'
 import LoadVote from './pages/Vote'
-import CloseVote from './pages/Close'
-import { Button, Container } from './components/Common'
-import { walletOpen, getStorage, Wallet } from 'alephium-js'
-
-ReactModal.setAppElement('#root')
-
-const SubmitVote = () => {
-  return (
-    <Container>
-      <p>Voting title?</p>
-      <Button>Yes</Button>
-      <Button>No</Button>
-    </Container>
-  )
-}
+import Administrate from './pages/Administrate'
+import Settings from './pages/Settings'
+import { Button } from './components/Common'
+import { getStorage, Wallet } from 'alephium-js'
+import Client from './util/client'
 
 interface Context {
   walletName: string
   setWalletName: (w: string) => void
   password: string
   setPassword: (p: string) => void
-  wallet?: Wallet
-  setWallet: (w: Wallet | undefined) => void
+  apiClient?: Client
+  setApiClient: (w: Client | undefined) => void
 }
 
 const initialContext: Context = {
@@ -35,95 +24,18 @@ const initialContext: Context = {
   setWalletName: () => null,
   password: '',
   setPassword: () => null,
-  wallet: undefined,
-  setWallet: () => null
+  apiClient: undefined,
+  setApiClient: () => null
 }
 
-interface SettingsProps {
-  isModalOpen: boolean
-  handleCloseModal: () => void
-}
-
-const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
-  const [tmpWalletName, setTmpWalletName] = useState('')
-  const [tmpPassword, setTmpPassword] = useState('')
-  const [tmpWallet, setTmpWallet] = useState(undefined)
-
-  const isWalletNameValid = (address: string) => {
-    if (address !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  const isPasswordValid = (password: string) => {
-    if (password !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  const handleOnClick = async (
-    setGlobalWalletName: (s: string) => void,
-    setGloabalPassword: (s: string) => void,
-    setGlobalWallet: (w: Wallet | undefined) => void
-  ) => {
-    if (isWalletNameValid(tmpWalletName) && isPasswordValid(tmpPassword)) {
-      setGlobalWalletName(tmpWalletName)
-      setGloabalPassword(tmpPassword)
-      console.log('try to connect')
-      const walletEncrypted = Storage.load(tmpWalletName)
-      const plainWallet = await walletOpen(tmpPassword, walletEncrypted)
-
-      if (plainWallet) {
-        setGlobalWallet(plainWallet)
-      }
-    }
-  }
-
-  return (
-    <GlobalContext.Consumer>
-      {({ walletName, setWalletName, password, setPassword, wallet, setWallet }) => (
-        <Modal
-          isOpen={isModalOpen}
-          shouldCloseOnEsc={true}
-          shouldCloseOnOverlayClick={true}
-          onRequestClose={handleCloseModal}
-        >
-          <Container>
-            <h1>Wallet Settings</h1>
-            <p>Wallet Name</p>
-            <input
-              placeholder="my wallet"
-              value={tmpWalletName}
-              onChange={(e) => setTmpWalletName(e.target.value)}
-            ></input>
-            <p>Wallet password</p>
-            <input
-              placeholder="my-secret-password"
-              value={tmpPassword}
-              onChange={(e) => setTmpPassword(e.target.value)}
-            ></input>
-            <p>Node Address</p>
-            <input placeholder="http://localhost:12973"></input>
-            <Button onClick={() => handleOnClick(setWalletName, setPassword, setWallet)}>Connect wallet</Button>
-          </Container>
-        </Modal>
-      )}
-    </GlobalContext.Consumer>
-  )
-}
-
-const GlobalContext = React.createContext<Context>(initialContext)
-const Storage = getStorage()
+export const GlobalContext = React.createContext<Context>(initialContext)
+export const Storage = getStorage()
 
 const App = () => {
   const [isModalOpened, setModal] = useState(false)
   const [walletName, setWalletName] = useState('')
   const [password, setPassword] = useState('')
-  const [wallet, setWallet] = useState<Wallet | undefined>(undefined)
+  const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
 
   const handleCloseModal = () => {
     setModal(false)
@@ -140,8 +52,8 @@ const App = () => {
         setWalletName,
         password,
         setPassword,
-        wallet,
-        setWallet
+        apiClient,
+        setApiClient
       }}
     >
       <Router>
@@ -156,24 +68,27 @@ const App = () => {
                 <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
                   Vote
                 </NavBarItem>
-                <NavBarItem to="/close" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                  Close
+                <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+                  Administrate
                 </NavBarItem>
               </NavBar>
-              <Button onClick={handleConnectWallet}>Connect wallet</Button>
+              <Button onClick={handleConnectWallet}>Unlock wallet</Button>
             </NavBarContainer>
             <Switch>
               <Route exact path="/">
                 <Create />
               </Route>
+              <Route exact path="/vote/:txId/:nVoters">
+                <LoadVote />
+              </Route>
               <Route path="/vote">
                 <LoadVote />
               </Route>
-              <Route path="/close">
-                <CloseVote />
+              <Route exact path="/administrate/:txId/:nVoters">
+                <Administrate />
               </Route>
-              <Route path="/submitVote">
-                <SubmitVote />
+              <Route path="/administrate">
+                <Administrate />
               </Route>
             </Switch>
             <Settings isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
@@ -200,11 +115,6 @@ const Logo = styled.img`
   height: 50px;
 `
 
-const Modal = styled(ReactModal)`
-  width: 500px;
-  margin: auto;
-  font-family: Arial;
-`
 const ContentContainer = styled.div`
   padding-top: 20px;
   padding-bottom: 20px;
