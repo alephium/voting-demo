@@ -33,7 +33,7 @@ export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
         <div>
           <SnackBarDiv style={{ backgroundColor: 'lightgreen' }}>
             <p>
-              <a href={`https://testnet.alephium.org/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+              <a href={`localhost:3000/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
                 Transaction{' '}
               </a>
               confirmed !
@@ -46,7 +46,7 @@ export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
         <SnackBarDiv style={{ backgroundColor: 'lightyellow' }}>
           <p>
             Pending{' '}
-            <a href={`https://testnet.alephium.org/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+            <a href={`localhost:3000/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
               transaction.
             </a>{' '}
             Please wait..
@@ -89,9 +89,9 @@ export const Create = () => {
       const result = await context.apiClient.contractSubmissionPipeline(
         createContract(voters.length),
         CONTRACTGAS,
-        `[ 0, 0, false, false, @${await context.apiClient.getActiveAddress()},
-          ${voters.map((voter) => `@${voter}`).join(', ')}
-        ]`,
+        `[ 0, 0, false, false, @${await context.apiClient.getActiveAddress()},[${voters
+          .map((voter) => `@${voter}`)
+          .join(', ')}]]`,
         voters.length.toString()
       )
       if (result) {
