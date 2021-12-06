@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
 import { BrowserRouter as Router, Switch, Route, NavLink } from 'react-router-dom'
@@ -17,6 +17,10 @@ interface Context {
   setPassword: (p: string) => void
   apiClient?: Client
   setApiClient: (w: Client | undefined) => void
+  nodeHost?: string
+  setNodeHost: (h: string) => void
+  explorerURL?: string
+  setExplorerURL: (h: string) => void
 }
 
 const initialContext: Context = {
@@ -25,7 +29,11 @@ const initialContext: Context = {
   password: '',
   setPassword: () => null,
   apiClient: undefined,
-  setApiClient: () => null
+  setApiClient: () => null,
+  nodeHost: '',
+  setNodeHost: () => null,
+  explorerURL: '',
+  setExplorerURL: () => null
 }
 
 export const GlobalContext = React.createContext<Context>(initialContext)
@@ -33,9 +41,11 @@ export const Storage = getStorage()
 
 const App = () => {
   const [isModalOpened, setModal] = useState(false)
-  const [walletName, setWalletName] = useState('')
-  const [password, setPassword] = useState('')
+  const [walletName, setWalletName] = useState<string>('wallet-1')
+  const [password, setPassword] = useState<string>('my-secret-password')
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
+  const [nodeHost, setNodeHost] = useState<string>('http://127.0.0.1:12973')
+  const [explorerURL, setExplorerURL] = useState<string>('http://127.0.0.1:3000')
 
   const handleCloseModal = () => {
     setModal(false)
@@ -43,6 +53,19 @@ const App = () => {
 
   const handleConnectWallet = () => {
     setModal(true)
+  }
+
+  useEffect(() => {
+    setApiClient(new Client(nodeHost, walletName, password))
+  }, [nodeHost, walletName, password])
+
+  const walletUnlock = () => {
+    if (apiClient) {
+      apiClient.walletUnlock().then(
+        (r) => alert('Wallet successfully unlocked'),
+        (reason) => alert(`An error occured during walletUnlock: ${reason}`)
+      )
+    }
   }
 
   return (
@@ -53,7 +76,11 @@ const App = () => {
         password,
         setPassword,
         apiClient,
-        setApiClient
+        setApiClient,
+        nodeHost,
+        setNodeHost,
+        explorerURL,
+        setExplorerURL
       }}
     >
       <Router>
@@ -72,7 +99,10 @@ const App = () => {
                   Administrate
                 </NavBarItem>
               </NavBar>
-              <Button onClick={handleConnectWallet}>Unlock wallet</Button>
+              <div>
+                <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
+                <Button onClick={handleConnectWallet}>Settings</Button>
+              </div>
             </NavBarContainer>
             <Switch>
               <Route exact path="/">

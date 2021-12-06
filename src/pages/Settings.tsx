@@ -15,18 +15,13 @@ ReactModal.setAppElement('#root')
 
 const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
   const context = useContext(GlobalContext)
-  const [tmpWalletName, setTmpWalletName] = useState('wallet-1')
-  const [tmpPassword, setTmpPassword] = useState('my-secret-password')
 
-  const unlockWallet = () => {
-    context.setApiClient(new Client('http://localhost:12973', tmpWalletName, tmpPassword))
-  }
-
-  useEffect(() => {
-    if (context.apiClient) {
-      context.apiClient.walletUnlock().then(() => alert('Wallet succesfully unlocked!'))
-    }
-  }, [context.apiClient])
+  const [tmpWalletName, setTmpWalletName] = useState(context.walletName ? context.walletName : 'wallet-1')
+  const [tmpPassword, setTmpPassword] = useState(context.password ? context.password : 'my-secret-password')
+  const [tmpNodeHost, setTmpNodeHost] = useState(context.nodeHost ? context.nodeHost : 'http://127.0.0.1:12973')
+  const [tmpExplorerURL, setTmpExplorerURL] = useState(
+    context.explorerURL ? context.explorerURL : 'http://127.0.0.1:3000'
+  )
 
   const isWalletNameValid = (address: string) => {
     //TODO: Check address format
@@ -45,18 +40,23 @@ const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
     }
   }
 
-  const handleOnClick = async (setGlobalWalletName: (s: string) => void, setGloabalPassword: (s: string) => void) => {
+  const handleOnClick = async (
+    setGlobalWalletName: (s: string) => void,
+    setGloabalPassword: (s: string) => void,
+    setGlobalNodeHost: (s: string) => void,
+    setGlobalExplorerURL: (s: string) => void
+  ) => {
     if (isWalletNameValid(tmpWalletName) && isPasswordValid(tmpPassword)) {
       setGlobalWalletName(tmpWalletName)
       setGloabalPassword(tmpPassword)
-      console.log('Try to unlock wallet')
-      unlockWallet()
+      setGlobalNodeHost(tmpNodeHost)
+      setGlobalExplorerURL(tmpExplorerURL)
     }
   }
 
   return (
     <GlobalContext.Consumer>
-      {({ walletName, setWalletName, password, setPassword, apiClient, setApiClient }) => (
+      {({ setWalletName, setPassword, nodeHost, setNodeHost, explorerURL, setExplorerURL }) => (
         <Modal
           isOpen={isModalOpen}
           shouldCloseOnEsc={true}
@@ -71,6 +71,7 @@ const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
               value={tmpWalletName}
               onChange={(e) => setTmpWalletName(e.target.value)}
             ></input>
+
             <p>Wallet password</p>
             <input
               type="password"
@@ -80,8 +81,15 @@ const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
             ></input>
 
             <p>Node Address</p>
-            <input placeholder="http://localhost:12973"></input>
-            <Button onClick={() => handleOnClick(setWalletName, setPassword)}>Unlock wallet</Button>
+            <input placeholder={nodeHost} value={tmpNodeHost} onChange={(e) => setTmpNodeHost(e.target.value)}></input>
+
+            <p>Explorer URL</p>
+            <input
+              placeholder={explorerURL}
+              value={tmpExplorerURL}
+              onChange={(e) => setTmpExplorerURL(e.target.value)}
+            ></input>
+            <Button onClick={() => handleOnClick(setWalletName, setPassword, setNodeHost, setExplorerURL)}>Save</Button>
           </Container>
         </Modal>
       )}

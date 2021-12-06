@@ -24,6 +24,7 @@ export interface TypedStatus {
 }
 
 export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
+  const context = useContext(GlobalContext)
   const status = txStatus as TypedStatus
   const getMessage = () => {
     if (!(txStatus && txId)) {
@@ -33,7 +34,7 @@ export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
         <div>
           <SnackBarDiv style={{ backgroundColor: 'lightgreen' }}>
             <p>
-              <a href={`localhost:3000/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+              <a href={`${context.explorerURL}/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
                 Transaction{' '}
               </a>
               confirmed !
@@ -46,7 +47,7 @@ export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
         <SnackBarDiv style={{ backgroundColor: 'lightyellow' }}>
           <p>
             Pending{' '}
-            <a href={`localhost:3000/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+            <a href={`${context.explorerURL}/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
               transaction.
             </a>{' '}
             Please wait..
