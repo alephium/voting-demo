@@ -44,11 +44,11 @@ class Client {
   }
 
   async walletUnlock() {
-    return this.api.wallets
-      .postWalletsWalletNameUnlock(this.walletName, {
+    return this.fetch(
+      this.api.wallets.postWalletsWalletNameUnlock(this.walletName, {
         password: this.password
       })
-      .catch((e) => alert(e))
+    )
   }
 
   async getPublicKey(): Promise<string> {
