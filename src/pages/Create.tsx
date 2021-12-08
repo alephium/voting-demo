@@ -12,7 +12,6 @@ import { NavLink } from 'react-router-dom'
 interface TxStatusSnackbar {
   txStatus: TxStatus
   txId: string
-  nVoters: number
 }
 export interface TypedStatus {
   type: string
@@ -23,7 +22,7 @@ export interface TypedStatus {
   toGroupConfirmations?: number
 }
 
-export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
+export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
   const context = useContext(GlobalContext)
   const status = txStatus as TypedStatus
   const getMessage = () => {
@@ -62,7 +61,6 @@ export const SnackBar = ({ txStatus, txId, nVoters }: TxStatusSnackbar) => {
 }
 export const Create = () => {
   const [voters, setVoters] = useState<string[]>([])
-  const nVoters = voters.length
   const [admin, setAdmin] = useState<string>('')
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
@@ -78,7 +76,12 @@ export const Create = () => {
       if (txResult) {
         context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
           setStatus(fetchedStatus)
-          setTypedStatus(fetchedStatus as TypedStatus)
+          const status = fetchedStatus as TypedStatus
+          setTypedStatus(status)
+          if (status.type == 'confirmed') {
+            context.setCurrentContractId(txResult.txId)
+            clearInterval(interval)
+          }
         })
       }
     }, 1000)
@@ -104,12 +107,11 @@ export const Create = () => {
   return (
     <div>
       <div>
-        {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} nVoters={voters.length} />}
+        {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} />}
         {txResult?.txId && typedStatus && typedStatus.type == 'confirmed' && (
           <Container>
             <div style={{ flexDirection: 'row' }}>
-              Click <NavLink to={`/administrate/${txResult.txId}/${nVoters}`}>here </NavLink>to allocate the tokens to
-              the voters.
+              Click <NavLink to={`/administrate/${txResult.txId}`}>here </NavLink>to allocate the tokens to the voters.
             </div>
           </Container>
         )}

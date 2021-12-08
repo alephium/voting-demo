@@ -202,6 +202,12 @@ class Client {
     const group = await this.fetch(this.api.addresses.getAddressesAddressGroup(votingRef.contractAddress))
     return this.fetch(this.api.contracts.getContractsAddressState(votingRef.contractAddress, { group: group.group }))
   }
+
+  getNVoters = async (txId: string): Promise<number> => {
+    return this.getContractState(txId).then((result: ContractStateResult) => {
+      return result.fields.length - 5
+    })
+  }
 }
 
 export default Client

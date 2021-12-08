@@ -21,6 +21,8 @@ interface Context {
   setNodeHost: (h: string) => void
   explorerURL?: string
   setExplorerURL: (h: string) => void
+  currentContractId: string | undefined
+  setCurrentContractId: (id: string) => void
 }
 
 const initialContext: Context = {
@@ -33,7 +35,9 @@ const initialContext: Context = {
   nodeHost: '',
   setNodeHost: () => null,
   explorerURL: '',
-  setExplorerURL: () => null
+  setExplorerURL: () => null,
+  currentContractId: '',
+  setCurrentContractId: () => null
 }
 
 export const GlobalContext = React.createContext<Context>(initialContext)
@@ -46,6 +50,7 @@ const App = () => {
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
   const [nodeHost, setNodeHost] = useState<string>('http://127.0.0.1:12973')
   const [explorerURL, setExplorerURL] = useState<string>('http://127.0.0.1:3000')
+  const [currentContractId, setCurrentContractId] = useState<string | undefined>(undefined)
 
   const handleCloseModal = () => {
     setModal(false)
@@ -80,7 +85,9 @@ const App = () => {
         nodeHost,
         setNodeHost,
         explorerURL,
-        setExplorerURL
+        setExplorerURL,
+        currentContractId,
+        setCurrentContractId
       }}
     >
       <Router>

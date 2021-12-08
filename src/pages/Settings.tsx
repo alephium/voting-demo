@@ -11,8 +11,6 @@ interface SettingsProps {
   handleCloseModal: () => void
 }
 
-ReactModal.setAppElement('#root')
-
 const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
   const context = useContext(GlobalContext)
 
