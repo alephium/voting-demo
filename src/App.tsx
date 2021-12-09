@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
-import { BrowserRouter as Router, Switch, Route, NavLink } from 'react-router-dom'
+import { Switch, Route, NavLink } from 'react-router-dom'
 import Create from './pages/Create'
 import LoadVote from './pages/Vote'
 import Administrate from './pages/Administrate'
@@ -71,48 +71,46 @@ const App = () => {
         setCurrentContractId
       }}
     >
-      <Router>
-        <MainContainer>
-          <ContentContainer>
-            <NavBarContainer>
-              <Logo src={logo}></Logo>
-              <NavBar>
-                <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                  Create
-                </NavBarItem>
-                <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                  Vote
-                </NavBarItem>
-                <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                  Administrate
-                </NavBarItem>
-              </NavBar>
-              <div>
-                <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
-                <Button onClick={handleConnectWallet}>SettingsPage</Button>
-              </div>
-            </NavBarContainer>
-            <Switch>
-              <Route exact path="/">
-                <Create />
-              </Route>
-              <Route exact path="/vote/:txId/:nVoters">
-                <LoadVote />
-              </Route>
-              <Route path="/vote">
-                <LoadVote />
-              </Route>
-              <Route exact path="/administrate/:txId/:nVoters">
-                <Administrate />
-              </Route>
-              <Route path="/administrate">
-                <Administrate />
-              </Route>
-            </Switch>
-            <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
-          </ContentContainer>
-        </MainContainer>
-      </Router>
+      <MainContainer>
+        <ContentContainer>
+          <NavBarContainer>
+            <Logo src={logo}></Logo>
+            <NavBar>
+              <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+                Create
+              </NavBarItem>
+              <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+                Vote
+              </NavBarItem>
+              <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+                Administrate
+              </NavBarItem>
+            </NavBar>
+            <div>
+              <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
+              <Button onClick={handleConnectWallet}>Settings</Button>
+            </div>
+          </NavBarContainer>
+          <Switch>
+            <Route exact path="/">
+              <Create />
+            </Route>
+            <Route exact path="/vote/:txId/:nVoters">
+              <LoadVote />
+            </Route>
+            <Route path="/vote">
+              <LoadVote />
+            </Route>
+            <Route exact path="/administrate/:txId/:nVoters">
+              <Administrate />
+            </Route>
+            <Route path="/administrate">
+              <Administrate />
+            </Route>
+          </Switch>
+          <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
+        </ContentContainer>
+      </MainContainer>
     </GlobalContext.Provider>
   )
 }

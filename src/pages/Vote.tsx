@@ -6,7 +6,7 @@ import { VotingRef } from '../util/client'
 import { useParams } from 'react-router-dom'
 import { Bool, TxResult, TxStatus, U256 } from 'alephium-js/dist/api/api-alephium'
 import { SnackBar } from './Create'
-import { catchAndAlert } from '../util/util'
+import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 
 interface SubmitVoteProps {
   votingRef?: VotingRef
@@ -22,6 +22,7 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
       if (txResult) {
         context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
           setTxStatus(fetchedStatus)
+          clearIntervalIfConfirmed(fetchedStatus, interval)
         })
       }
     }, 1000)
@@ -42,8 +43,12 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
       {!txResult && (
         <Container>
           <p>Voting title?</p>
-          <Button onClick={() => vote(true)}>Yes</Button>
-          <Button onClick={() => vote(false)}>No</Button>
+          <Button data-testid="voteYesBtn" onClick={() => vote(true)}>
+            Yes
+          </Button>
+          <Button data-testid="voteNoBtn" onClick={() => vote(false)}>
+            No
+          </Button>
         </Container>
       )}
     </div>
@@ -100,7 +105,6 @@ const LoadVote = () => {
     if (context.apiClient) {
       context.setCurrentContractId(contractAddress)
       const votingRef = await context.apiClient.getVotingMetaData(contractAddress)
-      console.log(votingRef)
       if (votingRef) {
         setVotingRef(votingRef)
         context.apiClient.getContractState(contractAddress).then((state) => {
@@ -115,11 +119,14 @@ const LoadVote = () => {
     <Container>
       <p>Contract transaction ID</p>
       <input
+        data-testid="votingTxInput"
         placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
         value={contractAddress}
         onChange={(e) => setContractAddress(e.target.value)}
       ></input>
-      <Button onClick={() => catchAndAlert(load())}>Load Contract</Button>
+      <Button data-testid="loadContractBtn" onClick={() => catchAndAlert(load())}>
+        Load Contract
+      </Button>
     </Container>
   )
 

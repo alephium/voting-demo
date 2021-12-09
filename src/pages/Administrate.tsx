@@ -5,7 +5,7 @@ import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { SnackBar, TypedStatus } from './Create'
-import { catchAndAlert } from '../util/util'
+import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 
 type Params = {
   txId?: string
@@ -37,7 +37,9 @@ const Administrate = () => {
       if (txResult) {
         context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
           setTxStatus(fetchedStatus)
-          setTypedStatus(fetchedStatus as TypedStatus)
+          const status = fetchedStatus as TypedStatus
+          setTypedStatus(status)
+          clearIntervalIfConfirmed(fetchedStatus, interval)
         })
       }
     }, 1000)
@@ -83,12 +85,17 @@ const Administrate = () => {
         <Container>
           <p>Contract transaction ID</p>
           <input
+            data-testid="closingTxInput"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}
           ></input>
-          <Button onClick={() => catchAndAlert(allocateTokens())}>Allocate Tokens</Button>
-          <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
+          <Button data-testid="allocateTokensBtn" onClick={() => catchAndAlert(allocateTokens())}>
+            Allocate Tokens
+          </Button>
+          <Button data-testid="closeVotingBtn" onClick={() => catchAndAlert(close())}>
+            Close voting
+          </Button>
         </Container>
       )}
     </div>
