@@ -5,13 +5,14 @@ import { createVotingScript } from '../util/voting'
 import { VotingRef } from '../util/client'
 import { useParams } from 'react-router-dom'
 import { Bool, TxResult, TxStatus, U256 } from 'alephium-js/dist/api/api-alephium'
-import { SnackBar, TypedStatus } from './Create'
+import { SnackBar } from './Create'
 
 interface SubmitVoteProps {
   votingRef?: VotingRef
-  nVoters: number
+  contractTxId?: string
 }
-const SubmitVote = ({ votingRef, nVoters }: SubmitVoteProps) => {
+
+const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
   const context = useContext(GlobalContext)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
@@ -24,17 +25,19 @@ const SubmitVote = ({ votingRef, nVoters }: SubmitVoteProps) => {
       }
     }, 1000)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const vote = async (choice: boolean) => {
-    if (votingRef && context.apiClient) {
+    if (votingRef && context.apiClient && contractTxId) {
+      const nVoters = await context.apiClient.getNVoters(contractTxId)
       const txScript = createVotingScript(choice, votingRef, nVoters)
       context.apiClient.scriptSubmissionPipeline(txScript).then(setResult)
     }
   }
   return (
     <div>
-      {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} nVoters={nVoters} />}
+      {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} />}
       {!txResult && (
         <Container>
           <p>Voting title?</p>
@@ -47,17 +50,16 @@ const SubmitVote = ({ votingRef, nVoters }: SubmitVoteProps) => {
 }
 
 interface ResultsProps {
-  contracTxId: string
+  contractTxId: string
 }
-const Results = ({ contracTxId }: ResultsProps) => {
+const Results = ({ contractTxId }: ResultsProps) => {
   const context = useContext(GlobalContext)
 
   const [yes, setYes] = useState('')
   const [no, setNo] = useState('')
-  const [isClosed, setIsClosed] = useState(false)
 
   if (context.apiClient) {
-    context.apiClient.getContractState(contracTxId).then((state) => {
+    context.apiClient.getContractState(contractTxId).then((state) => {
       const tmpYes = state.fields[0] as U256
       const tmpNo = state.fields[1] as U256
       setYes(tmpYes.value)
@@ -79,17 +81,23 @@ type Params = {
   nVoters?: string
 }
 const LoadVote = () => {
-  const { txId, nVoters } = useParams<Params>()
-  const initNVoters = nVoters ? Number.parseInt(nVoters) : 0
-  const initTxId = txId ? txId : ''
-  const [contractAddress, setContractAddress] = useState<string>(initTxId)
-  const [numberVoters, setNVoters] = useState<number>(initNVoters)
+  const context = useContext(GlobalContext)
+  const { txId } = useParams<Params>()
+  const getInitTxId = () => {
+    let initTxId = txId ? txId : ''
+    if (context.currentContractId) {
+      initTxId = context.currentContractId
+    }
+    return initTxId
+  }
+
+  const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
   const [isClosed, setIsClosed] = useState<boolean | undefined>(undefined)
   const [votingRef, setVotingRef] = useState<VotingRef | undefined>(undefined)
 
-  const context = useContext(GlobalContext)
   const load = async () => {
     if (context.apiClient) {
+      context.setCurrentContractId(contractAddress)
       const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
       console.log(votingRef)
       if (votingRef) {
@@ -101,6 +109,7 @@ const LoadVote = () => {
       }
     }
   }
+
   let content = (
     <Container>
       <p>Contract transaction ID</p>
@@ -109,18 +118,16 @@ const LoadVote = () => {
         value={contractAddress}
         onChange={(e) => setContractAddress(e.target.value)}
       ></input>
-      <p>Number of voters</p>
-      <input placeholder="5" value={numberVoters} onChange={(e) => setNVoters(parseInt(e.target.value))}></input>
       <Button onClick={() => load()}>Load Contract</Button>
     </Container>
   )
 
   if (isClosed === true) {
     if (context.apiClient) {
-      content = <Results contracTxId={contractAddress} />
+      content = <Results contractTxId={contractAddress} />
     }
   } else if (isClosed === false) {
-    content = <SubmitVote votingRef={votingRef} nVoters={numberVoters} />
+    content = <SubmitVote votingRef={votingRef} contractTxId={context.currentContractId} />
   }
   return content
 }

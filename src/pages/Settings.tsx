@@ -3,15 +3,11 @@ import ReactModal from 'react-modal'
 import styled from 'styled-components'
 import { Button, Container } from '../components/Common'
 import { GlobalContext } from '../App'
-import Client from '../util/client'
-import { useEffect } from 'react'
 
 interface SettingsProps {
   isModalOpen: boolean
   handleCloseModal: () => void
 }
-
-ReactModal.setAppElement('#root')
 
 const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
   const context = useContext(GlobalContext)
@@ -62,6 +58,7 @@ const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
           shouldCloseOnEsc={true}
           shouldCloseOnOverlayClick={true}
           onRequestClose={handleCloseModal}
+          ariaHideApp={false}
         >
           <Container>
             <h1>Wallet Settings</h1>

@@ -16,15 +16,19 @@ enum Action {
 
 const Administrate = () => {
   const { txId, nVoters } = useParams<Params>()
-  const initNVoters = nVoters ? Number.parseInt(nVoters) : 0
-  const initTxId = txId ? txId : ''
-  const [contractAddress, setContractAddress] = useState<string>(initTxId)
-  const [numberVoters, setNVoters] = useState<number>(initNVoters)
+  const context = useContext(GlobalContext)
+  const getInitTxId = () => {
+    let initTxId = txId ? txId : ''
+    if (context.currentContractId) {
+      initTxId = context.currentContractId
+    }
+    return initTxId
+  }
+  const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [lastAction, setLastAction] = useState<Action | undefined>(undefined)
-  const context = useContext(GlobalContext)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,14 +40,17 @@ const Administrate = () => {
       }
     }, 1000)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const allocateTokens = async () => {
     if (context.apiClient) {
       const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
       if (votingRef) {
+        const numberVoters = await context.apiClient.getNVoters(contractAddress)
         await context.apiClient.scriptSubmissionPipeline(allocateTokenScript(votingRef, numberVoters)).then(setResult)
         setLastAction(Action.Allocate)
+        context.setCurrentContractId(contractAddress)
       }
     }
   }
@@ -51,15 +58,17 @@ const Administrate = () => {
     if (context.apiClient) {
       const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
       if (votingRef) {
+        const numberVoters = await context.apiClient.getNVoters(contractAddress)
         await context.apiClient.scriptSubmissionPipeline(closeVotingScript(votingRef, numberVoters)).then(setResult)
         setLastAction(Action.Close)
+        context.setCurrentContractId(contractAddress)
       }
     }
   }
 
   return (
     <div>
-      {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} nVoters={numberVoters} />}
+      {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type === 'confirmed' && lastAction === Action.Allocate && (
         <Container>
           <div style={{ flexDirection: 'row' }}>
@@ -75,8 +84,6 @@ const Administrate = () => {
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}
           ></input>
-          <p>Number of voters</p>
-          <input placeholder="5" value={numberVoters} onChange={(e) => setNVoters(parseInt(e.target.value))}></input>
           <Button onClick={() => allocateTokens()}>Allocate Tokens</Button>
           <Button onClick={() => close()}>Close voting</Button>
         </Container>
