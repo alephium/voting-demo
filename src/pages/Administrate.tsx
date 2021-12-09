@@ -5,6 +5,8 @@ import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { SnackBar, TypedStatus } from './Create'
+import { catchAndAlert } from '../util/util'
+
 type Params = {
   txId?: string
   nVoters?: string
@@ -49,6 +51,7 @@ const Administrate = () => {
       if (votingRef) {
         const numberVoters = await context.apiClient.getNVoters(contractAddress)
         await context.apiClient.scriptSubmissionPipeline(allocateTokenScript(votingRef, numberVoters)).then(setResult)
+
         setLastAction(Action.Allocate)
         context.setCurrentContractId(contractAddress)
       }
@@ -84,8 +87,8 @@ const Administrate = () => {
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}
           ></input>
-          <Button onClick={() => allocateTokens()}>Allocate Tokens</Button>
-          <Button onClick={() => close()}>Close voting</Button>
+          <Button onClick={() => catchAndAlert(allocateTokens())}>Allocate Tokens</Button>
+          <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>
       )}
     </div>

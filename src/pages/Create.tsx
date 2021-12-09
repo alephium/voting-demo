@@ -8,6 +8,7 @@ import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { NavLink } from 'react-router-dom'
+import { catchAndAlert } from '../util/util'
 
 interface TxStatusSnackbar {
   txStatus: TxStatus
@@ -132,7 +133,7 @@ export const Create = () => {
             ))}
           </ul>
           <VoterInput addVoter={addVoter} />
-          <Button onClick={() => submit()}>Submit</Button>
+          <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
       )}
     </div>
