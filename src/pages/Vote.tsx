@@ -5,7 +5,7 @@ import { createVotingScript } from '../util/voting'
 import { VotingRef } from '../util/client'
 import { useParams } from 'react-router-dom'
 import { Bool, TxResult, TxStatus, U256 } from 'alephium-js/dist/api/api-alephium'
-import { SnackBar, TypedStatus } from './Create'
+import { SnackBar } from './Create'
 
 interface SubmitVoteProps {
   votingRef?: VotingRef
@@ -25,6 +25,7 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
       }
     }, 1000)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const vote = async (choice: boolean) => {

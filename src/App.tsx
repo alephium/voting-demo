@@ -7,7 +7,7 @@ import LoadVote from './pages/Vote'
 import Administrate from './pages/Administrate'
 import Settings from './pages/Settings'
 import { Button } from './components/Common'
-import { getStorage, Wallet } from 'alephium-js'
+import { getStorage } from 'alephium-js'
 import Client from './util/client'
 
 interface Context {
@@ -67,7 +67,7 @@ const App = () => {
   const walletUnlock = () => {
     if (apiClient) {
       apiClient.walletUnlock().then(
-        (r) => alert('Wallet successfully unlocked'),
+        () => alert('Wallet successfully unlocked'),
         (reason) => alert(`An error occured during walletUnlock: ${reason}`)
       )
     }
