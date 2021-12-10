@@ -8,8 +8,11 @@ import { createContract, initContractState } from '../util/voting'
 import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
+import addressToGroup from 'alephium-js/dist/lib/address'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
+
+const totalNumberOfGroups = 4
 
 interface TxStatusSnackbar {
   txStatus: TxStatus
@@ -22,6 +25,11 @@ export interface TypedStatus {
   chainConfirmations?: number
   fromGroupConfirmations?: number
   toGroupConfirmations?: number
+}
+
+interface Address {
+  address: string
+  group: number
 }
 
 export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
@@ -71,12 +79,22 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
 }
 export const Create = () => {
   const [voters, setVoters] = useState<string[]>([])
-  const [admin, setAdmin] = useState<string>('')
+  const [admin, setAdmin] = useState<Address>({ address: '', group: 0 })
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
 
   const context = useContext(GlobalContext)
+
+  const updateAdmin = (address: string) => {
+    if (address != '') {
+      const group = addressToGroup(address, totalNumberOfGroups)
+      if (group != undefined) {
+        setAdmin({ address, group })
+      }
+    }
+  }
+
   const addVoter = (voter: string) => {
     console.log(voter)
     if (!voters.includes(voter)) {
@@ -138,9 +156,10 @@ export const Create = () => {
           <input
             id="admin-address"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
-            value={admin}
-            onChange={(e) => setAdmin(e.target.value)}
+            value={admin.address}
+            onChange={(e) => updateAdmin(e.target.value)}
           ></input>
+          {admin.address !== '' && 'group: ' + admin.group}
           <p>Voters</p>
           {voters.map((voter, index) => (
             <VoterDiv key={index}>
