@@ -6,6 +6,7 @@ import { VotingRef } from '../util/client'
 import { useParams } from 'react-router-dom'
 import { Bool, TxResult, TxStatus, U256 } from 'alephium-js/dist/api/api-alephium'
 import { SnackBar } from './Create'
+import { catchAndAlert } from '../util/util'
 
 interface SubmitVoteProps {
   votingRef?: VotingRef
@@ -32,7 +33,7 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
     if (votingRef && context.apiClient && contractTxId) {
       const nVoters = await context.apiClient.getNVoters(contractTxId)
       const txScript = createVotingScript(choice, votingRef, nVoters)
-      context.apiClient.scriptSubmissionPipeline(txScript).then(setResult)
+      catchAndAlert(context.apiClient.scriptSubmissionPipeline(txScript).then(setResult))
     }
   }
   return (
@@ -98,7 +99,7 @@ const LoadVote = () => {
   const load = async () => {
     if (context.apiClient) {
       context.setCurrentContractId(contractAddress)
-      const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
+      const votingRef = await context.apiClient.getVotingMetaData(contractAddress)
       console.log(votingRef)
       if (votingRef) {
         setVotingRef(votingRef)
@@ -118,7 +119,7 @@ const LoadVote = () => {
         value={contractAddress}
         onChange={(e) => setContractAddress(e.target.value)}
       ></input>
-      <Button onClick={() => load()}>Load Contract</Button>
+      <Button onClick={() => catchAndAlert(load())}>Load Contract</Button>
     </Container>
   )
 
