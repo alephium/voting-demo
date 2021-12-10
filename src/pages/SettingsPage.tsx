@@ -4,12 +4,12 @@ import styled from 'styled-components'
 import { Button, Container } from '../components/Common'
 import { GlobalContext } from '../App'
 
-interface SettingsProps {
+interface SettingsPageProps {
   isModalOpen: boolean
   handleCloseModal: () => void
 }
 
-const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
+const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
   const context = useContext(GlobalContext)
 
   const [tmpWalletName, setTmpWalletName] = useState(context.walletName ? context.walletName : 'wallet-1')
@@ -61,7 +61,7 @@ const Settings = ({ isModalOpen, handleCloseModal }: SettingsProps) => {
           ariaHideApp={false}
         >
           <Container>
-            <h1>Wallet Settings</h1>
+            <h1>Wallet SettingsPage</h1>
             <p>Wallet Name</p>
             <input
               placeholder="my wallet"
@@ -100,4 +100,4 @@ const Modal = styled(ReactModal)`
   font-family: Arial;
 `
 
-export default Settings
+export default SettingsPage
