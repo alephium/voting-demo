@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Switch, Route, NavLink } from 'react-router-do
 import Create from './pages/Create'
 import LoadVote from './pages/Vote'
 import Administrate from './pages/Administrate'
-import Settings from './pages/Settings'
+import SettingsPage from './pages/SettingsPage'
 import { Button } from './components/Common'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
@@ -108,7 +108,7 @@ const App = () => {
               </NavBar>
               <div>
                 <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
-                <Button onClick={handleConnectWallet}>Settings</Button>
+                <Button onClick={handleConnectWallet}>SettingsPage</Button>
               </div>
             </NavBarContainer>
             <Switch>
@@ -128,7 +128,7 @@ const App = () => {
                 <Administrate />
               </Route>
             </Switch>
-            <Settings isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
+            <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
           </ContentContainer>
         </MainContainer>
       </Router>
