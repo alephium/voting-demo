@@ -3,6 +3,7 @@ import ReactModal from 'react-modal'
 import styled from 'styled-components'
 import { Button, Container } from '../components/Common'
 import { GlobalContext } from '../App'
+import { Settings } from '../util/settings'
 
 interface SettingsPageProps {
   isModalOpen: boolean
@@ -10,18 +11,17 @@ interface SettingsPageProps {
 }
 
 const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
-  const context = useContext(GlobalContext)
+  const { settings, setSettings } = useContext(GlobalContext)
 
-  const [tmpWalletName, setTmpWalletName] = useState(context.walletName ? context.walletName : 'wallet-1')
-  const [tmpPassword, setTmpPassword] = useState(context.password ? context.password : 'my-secret-password')
-  const [tmpNodeHost, setTmpNodeHost] = useState(context.nodeHost ? context.nodeHost : 'http://127.0.0.1:12973')
-  const [tmpExplorerURL, setTmpExplorerURL] = useState(
-    context.explorerURL ? context.explorerURL : 'http://127.0.0.1:3000'
-  )
+  const [tempSettings, setTempSettings] = useState<Settings>({
+    walletName: settings.walletName,
+    password: settings.password,
+    nodeHost: settings.nodeHost,
+    explorerURL: settings.explorerURL
+  })
 
-  const isWalletNameValid = (address: string) => {
-    //TODO: Check address format
-    if (address !== '') {
+  const isWalletNameValid = (walletName: string) => {
+    if (walletName !== '') {
       return true
     } else {
       return false
@@ -36,61 +36,58 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
     }
   }
 
-  const handleOnClick = async (
-    setGlobalWalletName: (s: string) => void,
-    setGloabalPassword: (s: string) => void,
-    setGlobalNodeHost: (s: string) => void,
-    setGlobalExplorerURL: (s: string) => void
-  ) => {
-    if (isWalletNameValid(tmpWalletName) && isPasswordValid(tmpPassword)) {
-      setGlobalWalletName(tmpWalletName)
-      setGloabalPassword(tmpPassword)
-      setGlobalNodeHost(tmpNodeHost)
-      setGlobalExplorerURL(tmpExplorerURL)
+  const handleOnClick = () => {
+    if (isWalletNameValid(tempSettings.walletName) && isPasswordValid(tempSettings.password)) {
+      setSettings(tempSettings)
     }
   }
 
+  const editSettings = (partial: Partial<Settings>) => {
+    const newSettings = { ...tempSettings, ...partial }
+    setTempSettings(newSettings)
+  }
+
   return (
-    <GlobalContext.Consumer>
-      {({ setWalletName, setPassword, nodeHost, setNodeHost, explorerURL, setExplorerURL }) => (
-        <Modal
-          isOpen={isModalOpen}
-          shouldCloseOnEsc={true}
-          shouldCloseOnOverlayClick={true}
-          onRequestClose={handleCloseModal}
-          ariaHideApp={false}
-        >
-          <Container>
-            <h1>Wallet SettingsPage</h1>
-            <p>Wallet Name</p>
-            <input
-              placeholder="my wallet"
-              value={tmpWalletName}
-              onChange={(e) => setTmpWalletName(e.target.value)}
-            ></input>
+    <Modal
+      isOpen={isModalOpen}
+      shouldCloseOnEsc={true}
+      shouldCloseOnOverlayClick={true}
+      onRequestClose={handleCloseModal}
+      ariaHideApp={false}
+    >
+      <Container>
+        <h1>Wallet SettingsPage</h1>
+        <p>Wallet Name</p>
+        <input
+          placeholder="my wallet"
+          value={tempSettings.walletName}
+          onChange={(e) => editSettings({ walletName: e.target.value })}
+        ></input>
 
-            <p>Wallet password</p>
-            <input
-              type="password"
-              placeholder="my-secret-password"
-              value={tmpPassword}
-              onChange={(e) => setTmpPassword(e.target.value)}
-            ></input>
+        <p>Wallet password</p>
+        <input
+          type="password"
+          placeholder="my-secret-password"
+          value={tempSettings.password}
+          onChange={(e) => editSettings({ password: e.target.value })}
+        ></input>
 
-            <p>Node Address</p>
-            <input placeholder={nodeHost} value={tmpNodeHost} onChange={(e) => setTmpNodeHost(e.target.value)}></input>
+        <p>Node Address</p>
+        <input
+          placeholder={tempSettings.nodeHost}
+          value={tempSettings.nodeHost}
+          onChange={(e) => editSettings({ nodeHost: e.target.value })}
+        ></input>
 
-            <p>Explorer URL</p>
-            <input
-              placeholder={explorerURL}
-              value={tmpExplorerURL}
-              onChange={(e) => setTmpExplorerURL(e.target.value)}
-            ></input>
-            <Button onClick={() => handleOnClick(setWalletName, setPassword, setNodeHost, setExplorerURL)}>Save</Button>
-          </Container>
-        </Modal>
-      )}
-    </GlobalContext.Consumer>
+        <p>Explorer URL</p>
+        <input
+          placeholder={tempSettings.explorerURL}
+          value={tempSettings.explorerURL}
+          onChange={(e) => editSettings({ explorerURL: e.target.value })}
+        ></input>
+        <Button onClick={() => handleOnClick()}>Save</Button>
+      </Container>
+    </Modal>
   )
 }
 

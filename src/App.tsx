@@ -9,33 +9,22 @@ import SettingsPage from './pages/SettingsPage'
 import { Button } from './components/Common'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
+import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
 
 interface Context {
-  walletName: string
-  setWalletName: (w: string) => void
-  password: string
-  setPassword: (p: string) => void
+  settings: Settings
+  setSettings: (s: Settings) => void
   apiClient?: Client
   setApiClient: (w: Client | undefined) => void
-  nodeHost?: string
-  setNodeHost: (h: string) => void
-  explorerURL?: string
-  setExplorerURL: (h: string) => void
   currentContractId: string | undefined
   setCurrentContractId: (id: string) => void
 }
 
 const initialContext: Context = {
-  walletName: '',
-  setWalletName: () => null,
-  password: '',
-  setPassword: () => null,
+  settings: loadSettingsOrDefault(),
+  setSettings: () => null,
   apiClient: undefined,
   setApiClient: () => null,
-  nodeHost: '',
-  setNodeHost: () => null,
-  explorerURL: '',
-  setExplorerURL: () => null,
   currentContractId: '',
   setCurrentContractId: () => null
 }
@@ -45,11 +34,8 @@ export const Storage = getStorage()
 
 const App = () => {
   const [isModalOpened, setModal] = useState(false)
-  const [walletName, setWalletName] = useState<string>('wallet-1')
-  const [password, setPassword] = useState<string>('my-secret-password')
+  const [settings, setSettings] = useState<Settings>(loadSettingsOrDefault())
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
-  const [nodeHost, setNodeHost] = useState<string>('http://127.0.0.1:12973')
-  const [explorerURL, setExplorerURL] = useState<string>('http://127.0.0.1:3000')
   const [currentContractId, setCurrentContractId] = useState<string | undefined>(undefined)
 
   const handleCloseModal = () => {
@@ -61,8 +47,9 @@ const App = () => {
   }
 
   useEffect(() => {
-    setApiClient(new Client(nodeHost, walletName, password))
-  }, [nodeHost, walletName, password])
+    setApiClient(new Client(settings.nodeHost, settings.walletName, settings.password))
+    saveSettings(settings)
+  }, [settings])
 
   const walletUnlock = () => {
     if (apiClient) {
@@ -76,16 +63,10 @@ const App = () => {
   return (
     <GlobalContext.Provider
       value={{
-        walletName,
-        setWalletName,
-        password,
-        setPassword,
+        settings,
+        setSettings,
         apiClient,
         setApiClient,
-        nodeHost,
-        setNodeHost,
-        explorerURL,
-        setExplorerURL,
         currentContractId,
         setCurrentContractId
       }}

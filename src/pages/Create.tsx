@@ -34,7 +34,11 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
         <div>
           <SnackBarDiv style={{ backgroundColor: 'lightgreen' }}>
             <p>
-              <a href={`${context.explorerURL}/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+              <a
+                href={`${context.settings.explorerURL}/#/transactions/${txId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Transaction{' '}
               </a>
               confirmed !
@@ -47,7 +51,11 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
         <SnackBarDiv style={{ backgroundColor: 'lightyellow' }}>
           <p>
             Pending{' '}
-            <a href={`${context.explorerURL}/#/transactions/${txId}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={`${context.settings.explorerURL}/#/transactions/${txId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               transaction.
             </a>{' '}
             Please wait..
