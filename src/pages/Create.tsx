@@ -78,7 +78,9 @@ export const Create = () => {
   const context = useContext(GlobalContext)
   const addVoter = (voter: string) => {
     console.log(voter)
-    setVoters([...voters, voter])
+    if (!voters.includes(voter)) {
+      setVoters([...voters, voter])
+    }
   }
   useEffect(() => {
     const interval = setInterval(() => {
