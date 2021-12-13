@@ -78,32 +78,32 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
   return getMessage()
 }
 export const Create = () => {
-  const [voters, setVoters] = useState<string[]>([])
-  const [admin, setAdmin] = useState<Address>({ address: '', group: 0 })
+  const [voters, setVoters] = useState<Address[]>([])
+  const [admin, setAdmin] = useState<Address>({ address: '', group: -1 })
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
 
   const context = useContext(GlobalContext)
 
+  function addressFromString(address: string): Address {
+    const group = addressToGroup(address, totalNumberOfGroups)
+    return { address, group }
+  }
+
   const updateAdmin = (address: string) => {
-    if (address != '') {
-      const group = addressToGroup(address, totalNumberOfGroups)
-      if (group != undefined) {
-        setAdmin({ address, group })
-      }
-    }
+    setAdmin(addressFromString(address))
   }
 
   const addVoter = (voter: string) => {
     console.log(voter)
-    if (!voters.includes(voter)) {
-      setVoters([...voters, voter])
+    if (!voters.map((voter) => voter.address).includes(voter)) {
+      setVoters([...voters, addressFromString(voter)])
     }
   }
 
   const removeVoter = (voter: string) => {
-    const newVoters = voters.filter((address) => voter != address)
+    const newVoters = voters.filter((address) => voter != address.address)
     setVoters(newVoters)
   }
 
@@ -131,7 +131,7 @@ export const Create = () => {
         createContract(voters.length),
         CONTRACTGAS,
         `[ 0, 0, false, false, @${await context.apiClient.getActiveAddress()},[${voters
-          .map((voter) => `@${voter}`)
+          .map((voter) => `@${voter.address}`)
           .join(', ')}]]`,
         voters.length.toString()
       )
@@ -164,16 +164,32 @@ export const Create = () => {
           {admin.address !== '' && 'group: ' + admin.group}
           <p>Voters</p>
           {voters.map((voter, index) => (
-            <VoterDiv key={index}>
-              {voter}
-              <Button onClick={() => removeVoter(voter)}>{'\u274C'}</Button>
-            </VoterDiv>
+            <Voter key={index} voter={voter} removeVoter={removeVoter} />
           ))}
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
       )}
     </div>
+  )
+}
+
+interface VoterProps {
+  voter: Address
+  removeVoter: (voter: string) => void
+}
+
+const Voter = ({ voter, removeVoter }: VoterProps) => {
+  const handleOnClick = () => {
+    removeVoter(voter.address)
+  }
+
+  return (
+    <VoterDiv>
+      {voter.address}
+      <Button onClick={() => handleOnClick()}>{'\u274C'}</Button>
+      group:{voter.group}
+    </VoterDiv>
   )
 }
 
