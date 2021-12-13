@@ -1,3 +1,4 @@
+import React from 'react'
 import { ChangeEvent, useState } from 'react'
 import { Container, Button } from '../components/Common'
 import styled from 'styled-components'
@@ -78,8 +79,16 @@ export const Create = () => {
   const context = useContext(GlobalContext)
   const addVoter = (voter: string) => {
     console.log(voter)
-    setVoters([...voters, voter])
+    if (!voters.includes(voter)) {
+      setVoters([...voters, voter])
+    }
   }
+
+  const removeVoter = (voter: string) => {
+    const newVoters = voters.filter((address) => voter != address)
+    setVoters(newVoters)
+  }
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (txResult) {
@@ -135,11 +144,12 @@ export const Create = () => {
             onChange={(e) => setAdmin(e.target.value)}
           ></input>
           <p>Voters</p>
-          <ul>
-            {voters.map((voter, index) => (
-              <li key={index}>{voter}</li>
-            ))}
-          </ul>
+          {voters.map((voter, index) => (
+            <VoterDiv key={index}>
+              {voter}
+              <Button onClick={() => removeVoter(voter)}>{'\u274C'}</Button>
+            </VoterDiv>
+          ))}
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
@@ -182,6 +192,12 @@ const VoterInput = ({ addVoter }: VoterInputProps) => {
     </VoterInputDiv>
   )
 }
+
+export const VoterDiv = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 1%;
+`
 
 export const VoterInputDiv = styled.div`
   display: flex;
