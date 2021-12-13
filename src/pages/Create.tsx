@@ -79,7 +79,7 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
 }
 export const Create = () => {
   const [voters, setVoters] = useState<Address[]>([])
-  const [admin, setAdmin] = useState<Address>({ address: '', group: -1 })
+  const [admin, setAdmin] = useState<Address | undefined>(undefined)
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
@@ -92,7 +92,11 @@ export const Create = () => {
   }
 
   const updateAdmin = (address: string) => {
-    setAdmin(addressFromString(address))
+    if (address != '') {
+      setAdmin(addressFromString(address))
+    } else {
+      setAdmin(undefined)
+    }
   }
 
   const addVoter = (voter: string) => {
@@ -156,10 +160,10 @@ export const Create = () => {
           <input
             id="admin-address"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
-            value={admin.address}
+            value={admin != undefined ? admin.address : ''}
             onChange={(e) => updateAdmin(e.target.value)}
           ></input>
-          {admin.address !== '' && 'group: ' + admin.group}
+          {admin !== undefined && admin.address !== '' && 'group: ' + admin.group}
           <p>Voters</p>
           {voters.map((voter, index) => (
             <Voter key={index} voter={voter} removeVoter={removeVoter} />
