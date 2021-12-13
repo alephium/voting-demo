@@ -83,19 +83,15 @@ const Administrate = () => {
       )}
       {!txResult && (
         <Container>
-          <p>Contract transaction ID</p>
+          <label htmlFor="tx-id">Contract transaction ID</label>
           <input
-            data-testid="closingTxInput"
+            id="tx-id"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}
           ></input>
-          <Button data-testid="allocateTokensBtn" onClick={() => catchAndAlert(allocateTokens())}>
-            Allocate Tokens
-          </Button>
-          <Button data-testid="closeVotingBtn" onClick={() => catchAndAlert(close())}>
-            Close voting
-          </Button>
+          <Button onClick={() => catchAndAlert(allocateTokens())}>Allocate Tokens</Button>
+          <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>
       )}
     </div>

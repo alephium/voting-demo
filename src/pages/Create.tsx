@@ -134,9 +134,9 @@ export const Create = () => {
       </div>
       {!txResult && (
         <Container>
-          <p>Administrator Address</p>
+          <label htmlFor="admin-address">Administrator Address</label>
           <input
-            data-testid="adminAddressInput"
+            id="admin-address"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
             value={admin}
             onChange={(e) => setAdmin(e.target.value)}
@@ -149,9 +149,7 @@ export const Create = () => {
             </VoterDiv>
           ))}
           <VoterInput addVoter={addVoter} />
-          <Button data-testid="submitVotersBtn" onClick={() => catchAndAlert(submit())}>
-            Submit
-          </Button>
+          <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
       )}
     </div>
@@ -187,15 +185,8 @@ const VoterInput = ({ addVoter }: VoterInputProps) => {
 
   return (
     <VoterInputDiv>
-      <input
-        data-testid="voterAddressInput"
-        placeholder="Enter voter address"
-        onChange={handleOnChange}
-        value={voter}
-      ></input>
-      <Button data-testid="addVoterBtn" onClick={() => handleOnClick()}>
-        +
-      </Button>
+      <input placeholder="Enter voter address" onChange={handleOnChange} value={voter}></input>
+      <Button onClick={() => handleOnClick()}>+</Button>
     </VoterInputDiv>
   )
 }

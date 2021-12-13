@@ -89,24 +89,24 @@ describe('functional tests that should', () => {
     })
 
     it('unlock the wallet', () => {
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1)
     })
 
     it('deploy the voting contract', async () => {
-      const adminInput = screen.queryByTestId('adminAddressInput') as HTMLElement
-      const voterInput = screen.queryByTestId('voterAddressInput') as HTMLElement
-      const addVoterBtn = screen.queryByTestId('addVoterBtn') as HTMLElement
-      const submitVotersBtn = screen.queryByTestId('submitVotersBtn') as HTMLElement
+      const adminInput = screen.getByLabelText('Administrator Address')
+      const voterInput = screen.getByPlaceholderText('Enter voter address')
+      const addVoterBtn = screen.getByRole('button', { name: '+' })
+      const submitBtn = screen.getByRole('button', { name: 'Submit' })
 
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
       fireEvent.change(adminInput, { target: { value: adminAddress } })
       voters.forEach((voter) => {
         fireEvent.change(voterInput, { target: { value: voter } })
         fireEvent.click(addVoterBtn)
       })
-      fireEvent.click(submitVotersBtn)
+      fireEvent.click(submitBtn)
       await waitFor(() => {
         expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledWith(
           createContract(voters.length),
@@ -119,8 +119,7 @@ describe('functional tests that should', () => {
         expect(screen.getByText('confirmed !')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('here'))
-      const closeVotingBtn = screen.getByTestId('closeVotingBtn') as HTMLElement
-      await (() => expect(closeVotingBtn).toBeInTheDocument())
+      await (() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
     })
   })
 
@@ -149,14 +148,16 @@ describe('functional tests that should', () => {
         })
       )
 
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
       const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
-      const loadBtn = screen.queryByTestId('loadContractBtn') as HTMLElement
-      fireEvent.click(loadBtn)
-      await waitFor(() => expect(screen.queryByTestId('voteYesBtn') as HTMLElement).toBeInTheDocument())
-      fireEvent.click(screen.queryByTestId('voteYesBtn') as HTMLElement)
+      fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'No' })).toBeInTheDocument()
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
       await waitFor(() => {
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
           createVotingScript(true, dummyVotingRef, nVoters)
@@ -182,12 +183,11 @@ describe('functional tests that should', () => {
         })
       )
 
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
       const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
-      const loadBtn = screen.queryByTestId('loadContractBtn') as HTMLElement
-      fireEvent.click(loadBtn)
+      fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
         expect(screen.getByText('Yes: 1')).toBeInTheDocument()
         expect(screen.getByText('No: 1')).toBeInTheDocument()
@@ -220,10 +220,9 @@ describe('functional tests that should', () => {
         })
       )
 
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      const allocationBtn = screen.queryByTestId('allocateTokensBtn') as HTMLElement
-      fireEvent.click(allocationBtn)
+      fireEvent.click(screen.getByRole('button', { name: 'Allocate Tokens' }))
       await waitFor(() => {
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
           allocateTokenScript(dummyVotingRef, nVoters)
@@ -232,7 +231,7 @@ describe('functional tests that should', () => {
         expect(screen.getByText('link')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('link'))
-      const loadContractBtn = screen.getByTestId('loadContractBtn') as HTMLElement
+      const loadContractBtn = screen.getByRole('button', { name: 'Load Contract' })
       await waitFor(() => expect(loadContractBtn).toBeInTheDocument())
     })
 
@@ -252,12 +251,11 @@ describe('functional tests that should', () => {
         })
       )
 
-      fireEvent.click(screen.getByText('Unlock Wallet'))
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      const txInput = screen.queryByTestId('closingTxInput') as HTMLElement
+      const txInput = screen.getByLabelText('Contract transaction ID')
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
-      const closeBtn = screen.queryByTestId('closeVotingBtn') as HTMLElement
-      fireEvent.click(closeBtn)
+      fireEvent.click(screen.getByRole('button', { name: 'Close voting' }))
       await waitFor(() => {
         expect(Client.prototype.getVotingMetaData).toHaveBeenCalledWith(dummyTxResult.txId)
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(

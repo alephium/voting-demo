@@ -43,12 +43,8 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
       {!txResult && (
         <Container>
           <p>Voting title?</p>
-          <Button data-testid="voteYesBtn" onClick={() => vote(true)}>
-            Yes
-          </Button>
-          <Button data-testid="voteNoBtn" onClick={() => vote(false)}>
-            No
-          </Button>
+          <Button onClick={() => vote(true)}>Yes</Button>
+          <Button onClick={() => vote(false)}>No</Button>
         </Container>
       )}
     </div>
@@ -124,9 +120,7 @@ const LoadVote = () => {
         value={contractAddress}
         onChange={(e) => setContractAddress(e.target.value)}
       ></input>
-      <Button data-testid="loadContractBtn" onClick={() => catchAndAlert(load())}>
-        Load Contract
-      </Button>
+      <Button onClick={() => catchAndAlert(load())}>Load Contract</Button>
     </Container>
   )
 
