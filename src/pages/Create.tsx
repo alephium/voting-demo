@@ -77,6 +77,12 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
   }
   return getMessage()
 }
+
+function addressFromString(address: string): Address {
+  const group = addressToGroup(address, totalNumberOfGroups)
+  return { address, group }
+}
+
 export const Create = () => {
   const [voters, setVoters] = useState<Address[]>([])
   const [admin, setAdmin] = useState<Address | undefined>(undefined)
@@ -85,11 +91,6 @@ export const Create = () => {
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
 
   const context = useContext(GlobalContext)
-
-  function addressFromString(address: string): Address {
-    const group = addressToGroup(address, totalNumberOfGroups)
-    return { address, group }
-  }
 
   const updateAdmin = (address: string) => {
     if (address != '') {
@@ -168,7 +169,7 @@ export const Create = () => {
           {admin !== undefined && admin.address !== '' && 'group: ' + admin.group}
           <p>Voters</p>
           {voters.map((voter, index) => (
-            <Voter key={index} voter={voter} removeVoter={removeVoter} />
+            <Voter key={index} voter={voter} removeVoter={removeVoter} admin={admin} />
           ))}
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
@@ -181,18 +182,31 @@ export const Create = () => {
 interface VoterProps {
   voter: Address
   removeVoter: (voter: string) => void
+  admin: Address | undefined
 }
 
-const Voter = ({ voter, removeVoter }: VoterProps) => {
+const Voter = ({ voter, removeVoter, admin }: VoterProps) => {
   const handleOnClick = () => {
     removeVoter(voter.address)
+  }
+
+  let groupInfo
+
+  if (admin != undefined) {
+    if (admin.group == voter.group) {
+      groupInfo = <span>group:{voter.group}</span>
+    } else {
+      groupInfo = <span style={{ color: 'red' }}>group:{voter.group}</span>
+    }
+  } else {
+    groupInfo = <span>group:{voter.group}</span>
   }
 
   return (
     <VoterDiv>
       {voter.address}
       <Button onClick={() => handleOnClick()}>{'\u274C'}</Button>
-      group:{voter.group}
+      {groupInfo}
     </VoterDiv>
   )
 }
@@ -227,6 +241,7 @@ const VoterInput = ({ addVoter }: VoterInputProps) => {
   return (
     <VoterInputDiv>
       <input placeholder="Enter voter address" onChange={handleOnChange} value={voter}></input>
+      {voter != '' && 'group:' + addressFromString(voter).group}
       <Button onClick={() => handleOnClick()}>+</Button>
     </VoterInputDiv>
   )
