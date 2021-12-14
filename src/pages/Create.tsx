@@ -1,6 +1,7 @@
 import React from 'react'
 import { ChangeEvent, useState } from 'react'
 import { Container, Button } from '../components/Common'
+import { Input } from '../components/Inputs'
 import styled from 'styled-components'
 import { useContext } from 'react'
 import { GlobalContext } from '../App'
@@ -118,9 +119,13 @@ export const Create = () => {
 
   const submit = async () => {
     if (context.apiClient) {
-      const result = await context.apiClient.contractSubmissionPipeline(
-        createContract(voters.length),
-        CONTRACTGAS,
+      if (admin == undefined) {
+        console.log('Please Provide an administrator address')
+        return Promise.resolve()
+      } else {
+        const result = await context.apiClient.contractSubmissionPipeline(
+          createContract(voters.length),
+          CONTRACTGAS,
           initContractState(
             admin?.address,
             voters.map((voter) => voter.address)
@@ -132,6 +137,7 @@ export const Create = () => {
         }
       }
     }
+  }
 
   return (
     <div>
@@ -147,14 +153,18 @@ export const Create = () => {
       </div>
       {!txResult && (
         <Container>
-          <label htmlFor="admin-address">Administrator Address</label>
-          <input
+          <h2>
+            <label htmlFor="admin-address">Administrator Address</label>
+          </h2>
+          <Input
             id="admin-address"
-            placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
+            placeholder="Please enter the administrator address"
             value={admin != undefined ? admin.address : ''}
             onChange={(e) => updateAdmin(e.target.value)}
-          ></input>
-          {admin !== undefined && admin.address !== '' && 'group: ' + admin.group}
+          />
+          <span style={{ marginLeft: '10px', marginTop: '10px' }}>
+            {admin !== undefined && admin.address !== '' && 'Group: ' + admin.group}
+          </span>
           <h2>Voters</h2>
           <VotersTable voters={voters} removeVoter={removeVoter} admin={admin} />
           <VoterInput addVoter={addVoter} />
@@ -193,10 +203,15 @@ const VoterInput = ({ addVoter }: VoterInputProps) => {
   }
 
   return (
-    <VoterInputDiv>
-      <input placeholder="Enter voter address" onChange={handleOnChange} value={voter}></input>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Input
+        id="voterInput"
+        placeholder="Please enter the voter address"
+        onChange={(e) => handleOnChange(e)}
+        value={voter}
+      />
       <Button onClick={() => handleOnClick()}>+</Button>
-    </VoterInputDiv>
+    </div>
   )
 }
 
@@ -223,4 +238,5 @@ export const SnackBarDiv = styled.div`
   padding-left: 10px;
   padding-right: 10px;
 `
+
 export default Create

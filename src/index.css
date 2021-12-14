@@ -28,3 +28,12 @@ th {
   text-overflow: ellipsis;
   padding: 8px;
 }
+
+h1 {
+  color: #555454;
+}
+
+h2 {
+  font-size: 20px;
+  color: #555454;
+}
