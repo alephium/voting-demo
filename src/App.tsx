@@ -3,7 +3,7 @@ import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
 import { Switch, Route, NavLink } from 'react-router-dom'
 import Create from './pages/Create'
-import LoadVote from './pages/Vote'
+import Vote from './pages/Vote/Vote'
 import Administrate from './pages/Administrate'
 import SettingsPage from './pages/SettingsPage'
 import { Button } from './components/Common'
@@ -96,10 +96,10 @@ const App = () => {
               <Create />
             </Route>
             <Route exact path="/vote/:txId/:nVoters">
-              <LoadVote />
+              <Vote />
             </Route>
             <Route path="/vote">
-              <LoadVote />
+              <Vote />
             </Route>
             <Route exact path="/administrate/:txId/:nVoters">
               <Administrate />
