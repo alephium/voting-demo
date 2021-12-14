@@ -11,25 +11,13 @@ import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import addressToGroup from 'alephium-js/dist/lib/address'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
-
+import { Address, TypedStatus } from '../util/types'
+import VotersTable from '../components/VotersTable'
 const totalNumberOfGroups = 4
 
 interface TxStatusSnackbar {
   txStatus: TxStatus
   txId: string
-}
-export interface TypedStatus {
-  type: string
-  blockHash?: string
-  txIndex?: number
-  chainConfirmations?: number
-  fromGroupConfirmations?: number
-  toGroupConfirmations?: number
-}
-
-interface Address {
-  address: string
-  group: number
 }
 
 export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
@@ -133,14 +121,17 @@ export const Create = () => {
       const result = await context.apiClient.contractSubmissionPipeline(
         createContract(voters.length),
         CONTRACTGAS,
-        initContractState(admin, voters),
-        voters.length.toString()
-      )
-      if (result) {
-        setResult(result)
+          initContractState(
+            admin?.address,
+            voters.map((voter) => voter.address)
+          ),
+          voters.length.toString()
+        )
+        if (result) {
+          setResult(result)
+        }
       }
     }
-  }
 
   return (
     <div>
@@ -164,34 +155,13 @@ export const Create = () => {
             onChange={(e) => updateAdmin(e.target.value)}
           ></input>
           {admin !== undefined && admin.address !== '' && 'group: ' + admin.group}
-          <p>Voters</p>
-          {voters.map((voter, index) => (
-            <Voter key={index} voter={voter} removeVoter={removeVoter} />
-          ))}
+          <h2>Voters</h2>
+          <VotersTable voters={voters} removeVoter={removeVoter} admin={admin} />
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
       )}
     </div>
-  )
-}
-
-interface VoterProps {
-  voter: Address
-  removeVoter: (voter: string) => void
-}
-
-const Voter = ({ voter, removeVoter }: VoterProps) => {
-  const handleOnClick = () => {
-    removeVoter(voter.address)
-  }
-
-  return (
-    <VoterDiv>
-      {voter.address}
-      <Button onClick={() => handleOnClick()}>{'\u274C'}</Button>
-      group:{voter.group}
-    </VoterDiv>
   )
 }
 

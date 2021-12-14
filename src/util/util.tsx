@@ -1,5 +1,5 @@
 import { TxStatus } from 'alephium-js/dist/api/api-alephium'
-import { TypedStatus } from '../pages/Create'
+import { TypedStatus } from './types'
 
 // eslint-disable-next-line
 export function catchAndAlert(action: Promise<any>) {

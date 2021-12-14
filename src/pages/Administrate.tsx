@@ -4,8 +4,9 @@ import { NavLink, useParams } from 'react-router-dom'
 import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
-import { SnackBar, TypedStatus } from './Create'
+import { SnackBar } from './Create'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
+import { TypedStatus } from '../util/types'
 
 type Params = {
   txId?: string
