@@ -116,7 +116,7 @@ describe('functional tests that should', () => {
         )
         expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledTimes(1)
         expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
-        expect(screen.getByText('confirmed !')).toBeInTheDocument()
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('here'))
       await (() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
@@ -163,7 +163,7 @@ describe('functional tests that should', () => {
           createVotingScript(true, dummyVotingRef, nVoters)
         )
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledTimes(1)
-        expect(screen.getByText('confirmed !')).toBeInTheDocument()
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
     })
 
@@ -227,7 +227,7 @@ describe('functional tests that should', () => {
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
           allocateTokenScript(dummyVotingRef, nVoters)
         )
-        expect(screen.getByText('confirmed !')).toBeInTheDocument()
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('link'))
@@ -261,7 +261,7 @@ describe('functional tests that should', () => {
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
           closeVotingScript(dummyVotingRef, nVoters)
         )
-        expect(screen.getByText('confirmed !')).toBeInTheDocument()
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
     })
   })

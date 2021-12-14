@@ -42,7 +42,7 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
               >
                 Transaction{' '}
               </a>
-              confirmed !
+              confirmed!
             </p>
           </SnackBarDiv>
         </div>
