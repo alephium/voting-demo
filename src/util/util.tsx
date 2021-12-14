@@ -1,3 +1,6 @@
+import { TxStatus } from 'alephium-js/dist/api/api-alephium'
+import { TypedStatus } from '../pages/Create'
+
 // eslint-disable-next-line
 export function catchAndAlert(action: Promise<any>) {
   action.catch((e) => {
@@ -7,4 +10,13 @@ export function catchAndAlert(action: Promise<any>) {
       alert(e)
     }
   })
+}
+
+export function clearIntervalIfConfirmed(fetchedStatus: TxStatus, interval: NodeJS.Timeout): boolean {
+  const status = fetchedStatus as TypedStatus
+  if (status.type == 'confirmed') {
+    clearInterval(interval)
+    return true
+  }
+  return false
 }

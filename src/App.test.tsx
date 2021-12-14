@@ -1,49 +1,268 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { Confirmed, ContractStateResult, TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
+import { MemoryRouter } from 'react-router-dom'
 import App from './App'
-import Client from './util/client'
+import Client, { CONTRACTGAS, VotingRef } from './util/client'
+import {
+  allocateTokenScript,
+  closeVotingScript,
+  createContract,
+  createVotingScript,
+  initContractState
+} from './util/voting'
 
 jest.mock('./util/client')
 window.alert = jest.fn()
 
-test('renders the home page', () => {
-  render(<App />)
-  const elements = ['Create', 'Vote', 'Administrate', 'SettingsPage', 'Unlock Wallet']
-  elements.forEach((text) => {
-    const element = screen.getByText(text)
-    expect(element).toBeInTheDocument()
+describe('functional tests that should', () => {
+  const dummyTxResult: TxResult = {
+    txId: '8d01198f2ec74b1e5cfd8c8a37d6542d16ee692df47700ce2293e0a22b6d4c22',
+    fromGroup: 0,
+    toGroup: 0
+  }
+  const dummyConfirmed: Confirmed = {
+    blockHash: '929102',
+    txIndex: 0,
+    chainConfirmations: 0,
+    fromGroupConfirmations: 0,
+    toGroupConfirmations: 0
+  }
+
+  const dummyTxStatus: TxStatus = {
+    type: 'confirmed',
+    ...dummyConfirmed
+  }
+  const dummyVotingRef = {
+    contractAddress: dummyTxResult.txId,
+    tokenId: '109b05391a240a0d21671720f62fe39138aaca562676053900b348a51e11ba25'
+  }
+  const adminAddress = '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH'
+  const voters = [
+    '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH',
+    '2DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH',
+    '3DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH'
+  ]
+  const nVoters = voters.length
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    window.alert.mockClear()
+    Client.prototype.walletUnlock = jest.fn().mockResolvedValue(Promise.resolve())
+    Client.prototype.scriptSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
+    Client.prototype.contractSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
+    Client.prototype.getTxStatus = jest.fn().mockResolvedValue(Promise.resolve(dummyTxStatus))
+    Client.prototype.getVotingMetaData = jest.fn().mockResolvedValue(Promise.resolve<VotingRef>(dummyVotingRef))
+    Client.prototype.getNVoters = jest.fn().mockResolvedValue(Promise.resolve(nVoters))
   })
-})
 
-test('navigates to Vote', () => {
-  render(<App />)
-  userEvent.click(screen.getByText('Vote'))
-  expect(screen.getByText('Load Contract')).toBeInTheDocument()
-})
-
-test('navigates to Administrate', () => {
-  render(<App />)
-  userEvent.click(screen.getByText('Administrate'))
-  expect(screen.getByText('Allocate Tokens')).toBeInTheDocument()
-})
-
-test('navigates to settings', () => {
-  render(<App />)
-  userEvent.click(screen.getByText('SettingsPage'))
-  expect(screen.getByText('Wallet SettingsPage')).toBeInTheDocument()
-})
-
-test('unlock wallet', () => {
-  window.alert.mockClear()
-  Client.mockClear()
-  const walletUnlock = jest.fn().mockResolvedValue(() => Promise.resolve('dummy result'))
-  Client.mockImplementation(() => {
-    return {
-      walletUnlock: walletUnlock
-    }
+  afterEach(() => {
+    // Running all pending timers and switching to real timers using Jest
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    jest.resetModules()
   })
-  render(<App />)
-  userEvent.click(screen.getByText('Unlock Wallet'))
-  expect(walletUnlock).toHaveBeenCalledTimes(1)
+
+  describe('open the create page and', () => {
+    beforeEach(() => {
+      render(
+        <MemoryRouter>
+          <App />
+        </MemoryRouter>
+      )
+    })
+
+    it('render the page', () => {
+      const elements = ['Create', 'Vote', 'Administrate', 'Settings', 'Unlock Wallet']
+      elements.forEach((text) => {
+        const element = screen.getByText(text)
+        expect(element).toBeInTheDocument()
+      })
+    })
+
+    it('navigate correctly', () => {
+      fireEvent.click(screen.getByText('Vote'))
+      expect(screen.getByText('Load Contract')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('Administrate'))
+      expect(screen.getByText('Allocate Tokens')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('Settings'))
+      expect(screen.getByText('Wallet SettingsPage')).toBeInTheDocument()
+    })
+
+    it('unlock the wallet', () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1)
+    })
+
+    it('deploy the voting contract', async () => {
+      const adminInput = screen.getByLabelText('Administrator Address')
+      const voterInput = screen.getByPlaceholderText('Enter voter address')
+      const addVoterBtn = screen.getByRole('button', { name: '+' })
+      const submitBtn = screen.getByRole('button', { name: 'Submit' })
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      fireEvent.change(adminInput, { target: { value: adminAddress } })
+      voters.forEach((voter) => {
+        fireEvent.change(voterInput, { target: { value: voter } })
+        fireEvent.click(addVoterBtn)
+      })
+      fireEvent.click(submitBtn)
+      await waitFor(() => {
+        expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledWith(
+          createContract(voters.length),
+          CONTRACTGAS,
+          initContractState(adminAddress, voters),
+          voters.length.toString()
+        )
+        expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledTimes(1)
+        expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+      })
+      fireEvent.click(screen.getByText('here'))
+      await (() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
+    })
+  })
+
+  describe('open the voting page and', () => {
+    beforeEach(() => {
+      render(
+        <MemoryRouter initialEntries={['/vote']}>
+          <App />
+        </MemoryRouter>
+      )
+    })
+
+    it('deploy the voting script', async () => {
+      Client.prototype.getContractState = jest.fn().mockResolvedValue(
+        Promise.resolve<ContractStateResult>({
+          fields: [
+            { value: '0' },
+            { value: '0' },
+            { value: false },
+            { value: true },
+            { value: adminAddress },
+            { value: voters[0] },
+            { value: voters[1] },
+            { value: voters[2] }
+          ]
+        })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
+      fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
+      fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'No' })).toBeInTheDocument()
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
+      await waitFor(() => {
+        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
+          createVotingScript(true, dummyVotingRef, nVoters)
+        )
+        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledTimes(1)
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+      })
+    })
+
+    it('show the voting results', async () => {
+      Client.prototype.getContractState = jest.fn().mockResolvedValue(
+        Promise.resolve<ContractStateResult>({
+          fields: [
+            { value: '1' },
+            { value: '1' },
+            { value: true },
+            { value: true },
+            { value: adminAddress },
+            { value: voters[0] },
+            { value: voters[1] },
+            { value: voters[2] }
+          ]
+        })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
+      fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
+      fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
+      await waitFor(() => {
+        expect(screen.getByText('Yes: 1')).toBeInTheDocument()
+        expect(screen.getByText('No: 1')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('open the administrate page and', () => {
+    beforeEach(() => {
+      render(
+        <MemoryRouter initialEntries={['/administrate']}>
+          <App />
+        </MemoryRouter>
+      )
+    })
+
+    it('allocate tokens', async () => {
+      Client.prototype.getContractState = jest.fn().mockResolvedValue(
+        Promise.resolve<ContractStateResult>({
+          fields: [
+            { value: '1' },
+            { value: '1' },
+            { value: true },
+            { value: false },
+            { value: adminAddress },
+            { value: voters[0] },
+            { value: voters[1] },
+            { value: voters[2] }
+          ]
+        })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      fireEvent.click(screen.getByRole('button', { name: 'Allocate Tokens' }))
+      await waitFor(() => {
+        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
+          allocateTokenScript(dummyVotingRef, nVoters)
+        )
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('link')).toBeInTheDocument()
+      })
+      fireEvent.click(screen.getByText('link'))
+      const loadContractBtn = screen.getByRole('button', { name: 'Load Contract' })
+      await waitFor(() => expect(loadContractBtn).toBeInTheDocument())
+    })
+
+    it('close voting', async () => {
+      Client.prototype.getContractState = jest.fn().mockResolvedValue(
+        Promise.resolve<ContractStateResult>({
+          fields: [
+            { value: '1' },
+            { value: '1' },
+            { value: false },
+            { value: true },
+            { value: adminAddress },
+            { value: voters[0] },
+            { value: voters[1] },
+            { value: voters[2] }
+          ]
+        })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
+      await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      const txInput = screen.getByLabelText('Contract transaction ID')
+      fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
+      fireEvent.click(screen.getByRole('button', { name: 'Close voting' }))
+      await waitFor(() => {
+        expect(Client.prototype.getVotingMetaData).toHaveBeenCalledWith(dummyTxResult.txId)
+        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
+          closeVotingScript(dummyVotingRef, nVoters)
+        )
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+      })
+    })
+  })
 })

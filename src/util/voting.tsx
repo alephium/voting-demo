@@ -81,3 +81,7 @@ export function closeVotingScript(votingRef: VotingRef, nVoters: number): string
   ${createContract(nVoters)}
   `
 }
+
+export function initContractState(adminAddress: string, voters: string[]): string {
+  return `[ 0, 0, false, false, @${adminAddress}, [${voters.map((voter) => `@${voter}`).join(', ')}]]`
+}

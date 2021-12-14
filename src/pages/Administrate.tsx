@@ -5,7 +5,7 @@ import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { SnackBar, TypedStatus } from './Create'
-import { catchAndAlert } from '../util/util'
+import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 
 type Params = {
   txId?: string
@@ -37,7 +37,9 @@ const Administrate = () => {
       if (txResult) {
         context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
           setTxStatus(fetchedStatus)
-          setTypedStatus(fetchedStatus as TypedStatus)
+          const status = fetchedStatus as TypedStatus
+          setTypedStatus(status)
+          clearIntervalIfConfirmed(fetchedStatus, interval)
         })
       }
     }, 1000)
@@ -81,8 +83,9 @@ const Administrate = () => {
       )}
       {!txResult && (
         <Container>
-          <p>Contract transaction ID</p>
+          <label htmlFor="tx-id">Contract transaction ID</label>
           <input
+            id="tx-id"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}

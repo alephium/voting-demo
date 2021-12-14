@@ -4,12 +4,12 @@ import { Container, Button } from '../components/Common'
 import styled from 'styled-components'
 import { useContext } from 'react'
 import { GlobalContext } from '../App'
-import { createContract } from '../util/voting'
+import { createContract, initContractState } from '../util/voting'
 import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { NavLink } from 'react-router-dom'
-import { catchAndAlert } from '../util/util'
+import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 
 interface TxStatusSnackbar {
   txStatus: TxStatus
@@ -42,7 +42,7 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
               >
                 Transaction{' '}
               </a>
-              confirmed !
+              confirmed!
             </p>
           </SnackBarDiv>
         </div>
@@ -96,9 +96,8 @@ export const Create = () => {
           setStatus(fetchedStatus)
           const status = fetchedStatus as TypedStatus
           setTypedStatus(status)
-          if (status.type == 'confirmed') {
+          if (clearIntervalIfConfirmed(fetchedStatus, interval)) {
             context.setCurrentContractId(txResult.txId)
-            clearInterval(interval)
           }
         })
       }
@@ -112,9 +111,7 @@ export const Create = () => {
       const result = await context.apiClient.contractSubmissionPipeline(
         createContract(voters.length),
         CONTRACTGAS,
-        `[ 0, 0, false, false, @${await context.apiClient.getActiveAddress()},[${voters
-          .map((voter) => `@${voter}`)
-          .join(', ')}]]`,
+        initContractState(admin, voters),
         voters.length.toString()
       )
       if (result) {
@@ -137,8 +134,9 @@ export const Create = () => {
       </div>
       {!txResult && (
         <Container>
-          <p>Administrator Address</p>
+          <label htmlFor="admin-address">Administrator Address</label>
           <input
+            id="admin-address"
             placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
             value={admin}
             onChange={(e) => setAdmin(e.target.value)}
