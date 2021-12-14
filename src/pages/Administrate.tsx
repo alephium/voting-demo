@@ -4,8 +4,8 @@ import { NavLink, useParams } from 'react-router-dom'
 import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
+import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
-import { SnackBar } from './Create'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { TypedStatus } from '../util/types'
 
@@ -13,6 +13,7 @@ type Params = {
   txId?: string
   nVoters?: string
 }
+
 enum Action {
   Allocate,
   Close
@@ -75,7 +76,7 @@ const Administrate = () => {
 
   return (
     <div>
-      {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} />}
+      {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type === 'confirmed' && lastAction === Action.Allocate && (
         <Container>
           <div style={{ flexDirection: 'row' }}>

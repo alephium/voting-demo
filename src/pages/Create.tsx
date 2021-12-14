@@ -1,8 +1,6 @@
-import React from 'react'
-import { ChangeEvent, useState } from 'react'
+import { useState } from 'react'
 import { Container, Button } from '../components/Common'
 import { Input } from '../components/Inputs'
-import styled from 'styled-components'
 import { useContext } from 'react'
 import { GlobalContext } from '../App'
 import { createContract, initContractState } from '../util/voting'
@@ -14,58 +12,10 @@ import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Address, TypedStatus } from '../util/types'
 import VotersTable from '../components/VotersTable'
+import VoterInput from '../components/VoterInput'
+import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
 const totalNumberOfGroups = 4
 
-interface TxStatusSnackbar {
-  txStatus: TxStatus
-  txId: string
-}
-
-export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
-  const context = useContext(GlobalContext)
-  const status = txStatus as TypedStatus
-  const getMessage = () => {
-    if (!(txStatus && txId)) {
-      return null
-    } else if (status.type === 'confirmed') {
-      return (
-        <div>
-          <SnackBarDiv style={{ backgroundColor: 'lightgreen' }}>
-            <p>
-              <a
-                href={`${context.settings.explorerURL}/#/transactions/${txId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Transaction{' '}
-              </a>
-              confirmed!
-            </p>
-          </SnackBarDiv>
-        </div>
-      )
-    } else if (status.type === 'mem-pooled') {
-      return (
-        <SnackBarDiv style={{ backgroundColor: 'lightyellow' }}>
-          <p>
-            Pending{' '}
-            <a
-              href={`${context.settings.explorerURL}/#/transactions/${txId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              transaction.
-            </a>{' '}
-            Please wait..
-          </p>
-        </SnackBarDiv>
-      )
-    } else {
-      return <SnackBarDiv>Transaction not found</SnackBarDiv>
-    }
-  }
-  return getMessage()
-}
 export const Create = () => {
   const [voters, setVoters] = useState<Address[]>([])
   const [admin, setAdmin] = useState<Address | undefined>(undefined)
@@ -142,7 +92,7 @@ export const Create = () => {
   return (
     <div>
       <div>
-        {txStatus && txResult?.txId && <SnackBar txStatus={txStatus} txId={txResult.txId} />}
+        {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
         {txResult?.txId && typedStatus && typedStatus.type == 'confirmed' && (
           <Container>
             <div style={{ flexDirection: 'row' }}>
@@ -174,69 +124,5 @@ export const Create = () => {
     </div>
   )
 }
-
-interface VoterInputProps {
-  addVoter: (voter: string) => void
-}
-
-const VoterInput = ({ addVoter }: VoterInputProps) => {
-  const [voter, setVoter] = useState('')
-  const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setVoter(e.target.value)
-  }
-
-  const isAddressValid = (address: string) => {
-    if (address !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  const handleOnClick = () => {
-    if (isAddressValid(voter)) {
-      addVoter(voter)
-      setVoter('')
-    } else {
-      alert('Please enter a valid address')
-    }
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Input
-        id="voterInput"
-        placeholder="Please enter the voter address"
-        onChange={(e) => handleOnChange(e)}
-        value={voter}
-      />
-      <Button onClick={() => handleOnClick()}>+</Button>
-    </div>
-  )
-}
-
-export const VoterDiv = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 1%;
-`
-
-export const VoterInputDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-export const SnackBarDiv = styled.div`
-  border-radius: 5px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  overflow: hidden;
-  font-family: Arial;
-  padding-left: 10px;
-  padding-right: 10px;
-`
 
 export default Create
