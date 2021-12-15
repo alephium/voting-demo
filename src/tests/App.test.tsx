@@ -1,18 +1,18 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Confirmed, ContractStateResult, TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { MemoryRouter } from 'react-router-dom'
-import App from './App'
-import Client, { CONTRACTGAS, VotingRef } from './util/client'
-import { Address } from './util/types'
+import App from '../App'
+import Client, { CONTRACTGAS, VotingRef } from '../util/client'
+import { Address } from '../util/types'
 import {
   allocateTokenScript,
   closeVotingScript,
   createContract,
   createVotingScript,
   initContractState
-} from './util/voting'
+} from '../util/voting'
 
-jest.mock('./util/client')
+jest.mock('../util/client')
 window.alert = jest.fn()
 
 describe('functional tests that should', () => {
@@ -51,7 +51,6 @@ describe('functional tests that should', () => {
 
   beforeEach(() => {
     jest.useFakeTimers()
-    window.alert.mockClear()
     Client.prototype.walletUnlock = jest.fn().mockResolvedValue(Promise.resolve())
     Client.prototype.scriptSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
     Client.prototype.contractSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
