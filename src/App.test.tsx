@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Confirmed, ContractStateResult, TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import Client, { CONTRACTGAS, VotingRef } from './util/client'
+import { Address } from './util/types'
 import {
   allocateTokenScript,
   closeVotingScript,
@@ -36,12 +37,16 @@ describe('functional tests that should', () => {
     contractAddress: dummyTxResult.txId,
     tokenId: '109b05391a240a0d21671720f62fe39138aaca562676053900b348a51e11ba25'
   }
-  const adminAddress = '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH'
-  const voters = [
-    '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH',
-    '2DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH',
-    '3DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH'
+  const admin: Address = {
+    address: '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH',
+    group: 0
+  }
+  const voters: Address[] = [
+    admin,
+    { address: '2DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH', group: 0 },
+    { address: '3DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH', group: 0 }
   ]
+
   const nVoters = voters.length
 
   beforeEach(() => {
@@ -101,17 +106,24 @@ describe('functional tests that should', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      fireEvent.change(adminInput, { target: { value: adminAddress } })
+      fireEvent.change(adminInput, { target: { value: admin.address } })
       voters.forEach((voter) => {
-        fireEvent.change(voterInput, { target: { value: voter } })
+        fireEvent.change(voterInput, { target: { value: voter.address } })
         fireEvent.click(addVoterBtn)
       })
+
+      const votersTable = screen.getByRole('table')
+      await waitFor(() => voters.forEach((v) => expect(within(votersTable).getByText(v.address)).toBeInTheDocument()))
+
       fireEvent.click(submitBtn)
       await waitFor(() => {
         expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledWith(
           createContract(voters.length),
           CONTRACTGAS,
-          initContractState(adminAddress, voters),
+          initContractState(
+            admin.address,
+            voters.map((v) => v.address)
+          ),
           voters.length.toString()
         )
         expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledTimes(1)
@@ -119,7 +131,32 @@ describe('functional tests that should', () => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('here'))
-      await (() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
+    })
+
+    it('display error message when a voter addres is in a incorrect group', async () => {
+      const adminInput = screen.getByLabelText('Administrator Address')
+      const voterInput = screen.getByPlaceholderText('Please enter the voter address')
+      const addVoterBtn = screen.getByRole('button', { name: '+' })
+
+      fireEvent.change(adminInput, { target: { value: admin.address } })
+      const invalidVoters: Address[] = [
+        admin,
+        { address: '2DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQH', group: 0 },
+        { address: '1DrDyTr9RpRsQnDnXo2YRiPzPW4ooHX5LLoqXrqfMrpQY', group: 2 }
+      ]
+      invalidVoters.forEach((voter) => {
+        fireEvent.change(voterInput, { target: { value: voter.address } })
+        fireEvent.click(addVoterBtn)
+      })
+
+      const votersTable = screen.getByRole('table')
+      await waitFor(() => {
+        invalidVoters.forEach((v) => expect(within(votersTable).getByText(v.address)).toBeInTheDocument())
+        expect(
+          screen.getByText(`Voters addresses should be in the administrator address Group ${admin.group}`)
+        ).toBeInTheDocument()
+      })
     })
   })
 
@@ -140,10 +177,10 @@ describe('functional tests that should', () => {
             { value: '0' },
             { value: false },
             { value: true },
-            { value: adminAddress },
-            { value: voters[0] },
-            { value: voters[1] },
-            { value: voters[2] }
+            { value: admin.address },
+            { value: voters[0].address },
+            { value: voters[1].address },
+            { value: voters[2].address }
           ]
         })
       )
@@ -175,10 +212,10 @@ describe('functional tests that should', () => {
             { value: '1' },
             { value: true },
             { value: true },
-            { value: adminAddress },
-            { value: voters[0] },
-            { value: voters[1] },
-            { value: voters[2] }
+            { value: admin.address },
+            { value: voters[0].address },
+            { value: voters[1].address },
+            { value: voters[2].address }
           ]
         })
       )
@@ -213,10 +250,10 @@ describe('functional tests that should', () => {
             { value: '1' },
             { value: true },
             { value: false },
-            { value: adminAddress },
-            { value: voters[0] },
-            { value: voters[1] },
-            { value: voters[2] }
+            { value: admin.address },
+            { value: voters[0].address },
+            { value: voters[1].address },
+            { value: voters[2].address }
           ]
         })
       )
@@ -244,10 +281,10 @@ describe('functional tests that should', () => {
             { value: '1' },
             { value: false },
             { value: true },
-            { value: adminAddress },
-            { value: voters[0] },
-            { value: voters[1] },
-            { value: voters[2] }
+            { value: admin.address },
+            { value: voters[0].address },
+            { value: voters[1].address },
+            { value: voters[2].address }
           ]
         })
       )

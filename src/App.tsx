@@ -11,7 +11,7 @@ import { getStorage } from 'alephium-js'
 import Client from './util/client'
 import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
 
-interface Context {
+export interface Context {
   settings: Settings
   setSettings: (s: Settings) => void
   apiClient?: Client
