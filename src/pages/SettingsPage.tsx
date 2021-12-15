@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import ReactModal from 'react-modal'
 import styled from 'styled-components'
 import { Button, Container } from '../components/Common'
+import { Input } from '../components/Inputs'
 import { GlobalContext } from '../App'
 import { Settings } from '../util/settings'
 
@@ -57,34 +58,39 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
     >
       <Container>
         <h1>Wallet SettingsPage</h1>
-        <p>Wallet Name</p>
-        <input
+
+        <label htmlFor="walletName">Wallet Name</label>
+        <Input
+          id="walletName"
           placeholder="my wallet"
           value={tempSettings.walletName}
           onChange={(e) => editSettings({ walletName: e.target.value })}
-        ></input>
+        />
 
-        <p>Wallet password</p>
-        <input
+        <label htmlFor="walletPassword">Wallet password</label>
+        <Input
+          id="walletPassword"
           type="password"
           placeholder="my-secret-password"
           value={tempSettings.password}
           onChange={(e) => editSettings({ password: e.target.value })}
-        ></input>
+        />
 
-        <p>Node Address</p>
-        <input
+        <label htmlFor="nodeHost">Node Address</label>
+        <Input
+          id="nodeHost"
           placeholder={tempSettings.nodeHost}
           value={tempSettings.nodeHost}
           onChange={(e) => editSettings({ nodeHost: e.target.value })}
-        ></input>
+        />
 
-        <p>Explorer URL</p>
-        <input
+        <label htmlFor="explorerUrl">Explorer URL</label>
+        <Input
+          id="explorerUrl"
           placeholder={tempSettings.explorerURL}
           value={tempSettings.explorerURL}
           onChange={(e) => editSettings({ explorerURL: e.target.value })}
-        ></input>
+        />
         <Button onClick={() => handleOnClick()}>Save</Button>
       </Container>
     </Modal>

@@ -3,9 +3,11 @@ import { useContext, useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
+import { Input } from '../components/Inputs'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
-import { SnackBar, TypedStatus } from './Create'
+import { SnackBar } from './Create'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
+import { TypedStatus } from '../util/types'
 
 type Params = {
   txId?: string
@@ -83,13 +85,15 @@ const Administrate = () => {
       )}
       {!txResult && (
         <Container>
-          <label htmlFor="tx-id">Contract transaction ID</label>
-          <input
+          <h2>
+            <label htmlFor="tx-id">Contract transaction ID</label>
+          </h2>
+          <Input
             id="tx-id"
-            placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
+            placeholder="Please enter the contract deployment transaction ID"
             value={contractAddress}
             onChange={(e) => setContractAddress(e.target.value)}
-          ></input>
+          />
           <Button onClick={() => catchAndAlert(allocateTokens())}>Allocate Tokens</Button>
           <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>

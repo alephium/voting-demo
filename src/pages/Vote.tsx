@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import { GlobalContext } from '../App'
 import { Container, Button } from '../components/Common'
+import { Input } from '../components/Inputs'
 import { createVotingScript } from '../util/voting'
 import { VotingRef } from '../util/client'
 import { useParams } from 'react-router-dom'
@@ -113,13 +114,15 @@ const LoadVote = () => {
 
   let content = (
     <Container>
-      <p>Contract transaction ID</p>
-      <input
-        data-testid="votingTxInput"
-        placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
+      <h2>
+        <label htmlFor="txId"> Contract transaction ID</label>
+      </h2>
+      <Input
+        id="txId"
+        placeholder="Please enter the contract deployment transaction ID"
         value={contractAddress}
         onChange={(e) => setContractAddress(e.target.value)}
-      ></input>
+      />
       <Button onClick={() => catchAndAlert(load())}>Load Contract</Button>
     </Container>
   )

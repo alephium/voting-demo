@@ -1,6 +1,7 @@
 import React from 'react'
 import { ChangeEvent, useState } from 'react'
 import { Container, Button } from '../components/Common'
+import { Input } from '../components/Inputs'
 import styled from 'styled-components'
 import { useContext } from 'react'
 import { GlobalContext } from '../App'
@@ -8,20 +9,16 @@ import { createContract, initContractState } from '../util/voting'
 import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
+import addressToGroup from 'alephium-js/dist/lib/address'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
+import { Address, TypedStatus } from '../util/types'
+import VotersTable from '../components/VotersTable'
+const totalNumberOfGroups = 4
 
 interface TxStatusSnackbar {
   txStatus: TxStatus
   txId: string
-}
-export interface TypedStatus {
-  type: string
-  blockHash?: string
-  txIndex?: number
-  chainConfirmations?: number
-  fromGroupConfirmations?: number
-  toGroupConfirmations?: number
 }
 
 export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
@@ -70,22 +67,36 @@ export const SnackBar = ({ txStatus, txId }: TxStatusSnackbar) => {
   return getMessage()
 }
 export const Create = () => {
-  const [voters, setVoters] = useState<string[]>([])
-  const [admin, setAdmin] = useState<string>('')
+  const [voters, setVoters] = useState<Address[]>([])
+  const [admin, setAdmin] = useState<Address | undefined>(undefined)
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
 
   const context = useContext(GlobalContext)
+
+  function addressFromString(address: string): Address {
+    const group = addressToGroup(address, totalNumberOfGroups)
+    return { address, group }
+  }
+
+  const updateAdmin = (address: string) => {
+    if (address != '') {
+      setAdmin(addressFromString(address))
+    } else {
+      setAdmin(undefined)
+    }
+  }
+
   const addVoter = (voter: string) => {
     console.log(voter)
-    if (!voters.includes(voter)) {
-      setVoters([...voters, voter])
+    if (!voters.map((voter) => voter.address).includes(voter)) {
+      setVoters([...voters, addressFromString(voter)])
     }
   }
 
   const removeVoter = (voter: string) => {
-    const newVoters = voters.filter((address) => voter != address)
+    const newVoters = voters.filter((address) => voter != address.address)
     setVoters(newVoters)
   }
 
@@ -108,14 +119,22 @@ export const Create = () => {
 
   const submit = async () => {
     if (context.apiClient) {
-      const result = await context.apiClient.contractSubmissionPipeline(
-        createContract(voters.length),
-        CONTRACTGAS,
-        initContractState(admin, voters),
-        voters.length.toString()
-      )
-      if (result) {
-        setResult(result)
+      if (admin == undefined) {
+        console.log('Please Provide an administrator address')
+        return Promise.resolve()
+      } else {
+        const result = await context.apiClient.contractSubmissionPipeline(
+          createContract(voters.length),
+          CONTRACTGAS,
+          initContractState(
+            admin?.address,
+            voters.map((voter) => voter.address)
+          ),
+          voters.length.toString()
+        )
+        if (result) {
+          setResult(result)
+        }
       }
     }
   }
@@ -134,20 +153,20 @@ export const Create = () => {
       </div>
       {!txResult && (
         <Container>
-          <label htmlFor="admin-address">Administrator Address</label>
-          <input
+          <h2>
+            <label htmlFor="admin-address">Administrator Address</label>
+          </h2>
+          <Input
             id="admin-address"
-            placeholder="T1BYxbazdyYqzMm7yp6VQTPXuQmrTnguLBuVNoAaLM44sZ"
-            value={admin}
-            onChange={(e) => setAdmin(e.target.value)}
-          ></input>
-          <p>Voters</p>
-          {voters.map((voter, index) => (
-            <VoterDiv key={index}>
-              {voter}
-              <Button onClick={() => removeVoter(voter)}>{'\u274C'}</Button>
-            </VoterDiv>
-          ))}
+            placeholder="Please enter the administrator address"
+            value={admin != undefined ? admin.address : ''}
+            onChange={(e) => updateAdmin(e.target.value)}
+          />
+          <span style={{ marginLeft: '10px', marginTop: '10px' }}>
+            {admin !== undefined && admin.address !== '' && 'Group: ' + admin.group}
+          </span>
+          <h2>Voters</h2>
+          <VotersTable voters={voters} removeVoter={removeVoter} admin={admin} />
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
         </Container>
@@ -184,10 +203,15 @@ const VoterInput = ({ addVoter }: VoterInputProps) => {
   }
 
   return (
-    <VoterInputDiv>
-      <input placeholder="Enter voter address" onChange={handleOnChange} value={voter}></input>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Input
+        id="voterInput"
+        placeholder="Please enter the voter address"
+        onChange={(e) => handleOnChange(e)}
+        value={voter}
+      />
       <Button onClick={() => handleOnClick()}>+</Button>
-    </VoterInputDiv>
+    </div>
   )
 }
 
@@ -214,4 +238,5 @@ export const SnackBarDiv = styled.div`
   padding-left: 10px;
   padding-right: 10px;
 `
+
 export default Create

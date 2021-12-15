@@ -95,7 +95,7 @@ describe('functional tests that should', () => {
 
     it('deploy the voting contract', async () => {
       const adminInput = screen.getByLabelText('Administrator Address')
-      const voterInput = screen.getByPlaceholderText('Enter voter address')
+      const voterInput = screen.getByPlaceholderText('Please enter the voter address')
       const addVoterBtn = screen.getByRole('button', { name: '+' })
       const submitBtn = screen.getByRole('button', { name: 'Submit' })
 
@@ -150,7 +150,7 @@ describe('functional tests that should', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
+      const txInput = screen.getByLabelText('Contract transaction ID')
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
@@ -185,7 +185,8 @@ describe('functional tests that should', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      const txInput = screen.queryByTestId('votingTxInput') as HTMLElement
+      const txInput = screen.getByLabelText('Contract transaction ID')
+
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
