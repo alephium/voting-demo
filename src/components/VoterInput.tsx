@@ -1,4 +1,5 @@
 import { ChangeEvent, useState } from 'react'
+import { isNotEmpty } from '../util/util'
 import { Button } from './Common'
 import { Input } from './Inputs'
 
@@ -12,13 +13,7 @@ export const VoterInput = ({ addVoter }: VoterInputProps) => {
     setVoter(e.target.value)
   }
 
-  const isAddressValid = (address: string) => {
-    if (address !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
+  const isAddressValid = isNotEmpty
 
   const handleOnClick = () => {
     if (isAddressValid(voter)) {
