@@ -20,3 +20,7 @@ export function clearIntervalIfConfirmed(fetchedStatus: TxStatus, interval: Node
   }
   return false
 }
+
+export const isNotEmpty = (s: string): boolean => {
+  return s !== '' ? true : false
+}

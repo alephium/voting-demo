@@ -23,7 +23,7 @@ export function loadSettings(): Settings | null {
   }
 }
 
-export function loadSettingsOrDefault() {
+export function loadSettingsOrDefault(): Settings {
   const settings = loadSettings()
   if (!settings) {
     return defaultSettings()
