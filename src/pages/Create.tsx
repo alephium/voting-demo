@@ -39,7 +39,6 @@ export const Create = () => {
   }
 
   const addVoter = (voter: string) => {
-    console.log(voter)
     if (!voters.map((voter) => voter.address).includes(voter)) {
       setVoters([...voters, addressFromString(voter)])
     }

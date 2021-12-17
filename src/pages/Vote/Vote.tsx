@@ -11,7 +11,6 @@ import SubmitVote from './SubmitVote'
 
 type Params = {
   txId?: string
-  nVoters?: string
 }
 
 const Vote = () => {

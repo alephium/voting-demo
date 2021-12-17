@@ -11,7 +11,6 @@ import { TypedStatus } from '../util/types'
 
 type Params = {
   txId?: string
-  nVoters?: string
 }
 
 enum Action {
@@ -20,7 +19,7 @@ enum Action {
 }
 
 const Administrate = () => {
-  const { txId, nVoters } = useParams<Params>()
+  const { txId } = useParams<Params>()
   const context = useContext(GlobalContext)
   const getInitTxId = () => {
     let initTxId = txId ? txId : ''
@@ -80,7 +79,7 @@ const Administrate = () => {
       {txResult?.txId && typedStatus && typedStatus.type === 'confirmed' && lastAction === Action.Allocate && (
         <Container>
           <div style={{ flexDirection: 'row' }}>
-            Share this<NavLink to={`/vote/${contractAddress}/${nVoters}`}> link </NavLink> to the voters.
+            Share this<NavLink to={`/vote/${contractAddress}`}> link </NavLink> to the voters.
           </div>
         </Container>
       )}

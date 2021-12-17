@@ -5,6 +5,7 @@ import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { GlobalContext } from '../App'
 import { Settings } from '../util/settings'
+import { isNotEmpty } from '../util/util'
 
 interface SettingsPageProps {
   isModalOpen: boolean
@@ -21,25 +22,22 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
     explorerURL: settings.explorerURL
   })
 
-  const isWalletNameValid = (walletName: string) => {
-    if (walletName !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  const isPasswordValid = (password: string) => {
-    if (password !== '') {
-      return true
-    } else {
-      return false
-    }
-  }
+  const isWalletNameValid = isNotEmpty
+  const isPasswordValid = isNotEmpty
+  const isNodeHostValid = isNotEmpty
+  const isExplorerURLValid = isNotEmpty
 
   const handleOnClick = () => {
-    if (isWalletNameValid(tempSettings.walletName) && isPasswordValid(tempSettings.password)) {
+    if (
+      isWalletNameValid(tempSettings.walletName) &&
+      isPasswordValid(tempSettings.password) &&
+      isNodeHostValid(tempSettings.nodeHost) &&
+      isExplorerURLValid(tempSettings.explorerURL)
+    ) {
       setSettings(tempSettings)
+      alert('Settings saved!')
+    } else {
+      alert('Invalid settings.')
     }
   }
 
@@ -67,7 +65,7 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
           onChange={(e) => editSettings({ walletName: e.target.value })}
         />
 
-        <label htmlFor="walletPassword">Wallet password</label>
+        <label htmlFor="walletPassword">Wallet Password</label>
         <Input
           id="walletPassword"
           type="password"

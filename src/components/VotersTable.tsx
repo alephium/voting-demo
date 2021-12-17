@@ -1,5 +1,5 @@
-import styled from 'styled-components'
 import { Address } from '../util/types'
+import { Alert, ALERT_PROPS } from './Alert'
 import { Button } from './Common'
 
 interface VotersTableProps {
@@ -48,22 +48,14 @@ export const VotersTable = ({ voters, removeVoter, admin }: VotersTableProps) =>
         </tbody>
       </table>
       {admin && voters.filter((voter) => voter.group !== admin.group).length > 0 ? (
-        <AlertSpan>Voters addresses should be in the administrator address Group {admin.group}</AlertSpan>
+        <div>
+          <Alert color={ALERT_PROPS.DANGER.color} backgroundColor={ALERT_PROPS.DANGER.backgroundColor}>
+            Voters addresses should be in the administrator address Group {admin.group}
+          </Alert>
+        </div>
       ) : null}
     </div>
   ) : null
 }
 
-const AlertSpan = styled.span`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #721c24;
-  margin-bottom: 20px;
-  background-color: #f8d7da;
-  width: 100%;
-  height: 50px;
-  border: 1px solid;
-  border-radius: 6px;
-`
 export default VotersTable

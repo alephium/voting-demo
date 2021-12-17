@@ -11,7 +11,7 @@ import { getStorage } from 'alephium-js'
 import Client from './util/client'
 import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
 
-interface Context {
+export interface Context {
   settings: Settings
   setSettings: (s: Settings) => void
   apiClient?: Client
@@ -95,13 +95,13 @@ const App = () => {
             <Route exact path="/">
               <Create />
             </Route>
-            <Route exact path="/vote/:txId/:nVoters">
+            <Route exact path="/vote/:txId">
               <Vote />
             </Route>
             <Route path="/vote">
               <Vote />
             </Route>
-            <Route exact path="/administrate/:txId/:nVoters">
+            <Route exact path="/administrate/:txId">
               <Administrate />
             </Route>
             <Route path="/administrate">
