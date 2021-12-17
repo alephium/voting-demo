@@ -48,9 +48,11 @@ export const VotersTable = ({ voters, removeVoter, admin }: VotersTableProps) =>
         </tbody>
       </table>
       {admin && voters.filter((voter) => voter.group !== admin.group).length > 0 ? (
-        <Alert color={ALERT_PROPS.DANGER.color} backgroundColor={ALERT_PROPS.DANGER.backgroundColor}>
-          Voters addresses should be in the administrator address Group {admin.group}
-        </Alert>
+        <div>
+          <Alert color={ALERT_PROPS.DANGER.color} backgroundColor={ALERT_PROPS.DANGER.backgroundColor}>
+            Voters addresses should be in the administrator address Group {admin.group}
+          </Alert>
+        </div>
       ) : null}
     </div>
   ) : null
