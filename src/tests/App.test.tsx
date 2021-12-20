@@ -235,6 +235,7 @@ describe('functional tests that should', () => {
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
+        expect(screen.getByText(dummyTitle)).toBeInTheDocument()
         expect(screen.getByText('Yes: 1')).toBeInTheDocument()
         expect(screen.getByText('No: 1')).toBeInTheDocument()
       })
