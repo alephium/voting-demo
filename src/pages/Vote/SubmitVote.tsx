@@ -10,9 +10,10 @@ import { createVotingScript } from '../../util/voting'
 interface SubmitVoteProps {
   votingRef?: VotingRef
   contractTxId?: string
+  title: string
 }
 
-const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
+const SubmitVote = ({ votingRef, contractTxId, title }: SubmitVoteProps) => {
   const context = useContext(GlobalContext)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
@@ -41,7 +42,7 @@ const SubmitVote = ({ votingRef, contractTxId }: SubmitVoteProps) => {
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {!txResult && (
         <Container>
-          <p>Voting title?</p>
+          <p>{title}</p>
           <Button onClick={() => vote(true)}>Yes</Button>
           <Button onClick={() => vote(false)}>No</Button>
         </Container>

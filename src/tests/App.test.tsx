@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import App from '../App'
 import Client, { CONTRACTGAS, VotingRef } from '../util/client'
 import { Address } from '../util/types'
+import { strToHexString } from '../util/util'
 import {
   allocateTokenScript,
   closeVotingScript,
@@ -16,6 +17,8 @@ jest.mock('../util/client')
 window.alert = jest.fn()
 
 describe('functional tests that should', () => {
+  const dummyTitle: string = 'Do you accept our proposal?'
+  const dummyTitleHex: string = strToHexString(dummyTitle)
   const dummyTxResult: TxResult = {
     txId: '8d01198f2ec74b1e5cfd8c8a37d6542d16ee692df47700ce2293e0a22b6d4c22',
     fromGroup: 0,
@@ -98,6 +101,7 @@ describe('functional tests that should', () => {
     })
 
     it('deploy the voting contract', async () => {
+      const titleInput = screen.getByLabelText('Voting Title')
       const adminInput = screen.getByLabelText('Administrator Address')
       const voterInput = screen.getByPlaceholderText('Please enter the voter address')
       const addVoterBtn = screen.getByRole('button', { name: '+' })
@@ -105,6 +109,7 @@ describe('functional tests that should', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
+      fireEvent.change(titleInput, { target: { value: dummyTitle } })
       fireEvent.change(adminInput, { target: { value: admin.address } })
       voters.forEach((voter) => {
         fireEvent.change(voterInput, { target: { value: voter.address } })
@@ -120,6 +125,7 @@ describe('functional tests that should', () => {
           createContract(voters.length),
           CONTRACTGAS,
           initContractState(
+            dummyTitle,
             admin.address,
             voters.map((v) => v.address)
           ),
@@ -172,6 +178,7 @@ describe('functional tests that should', () => {
       Client.prototype.getContractState = jest.fn().mockResolvedValue(
         Promise.resolve<ContractStateResult>({
           fields: [
+            { value: dummyTitleHex },
             { value: '0' },
             { value: '0' },
             { value: false },
@@ -190,6 +197,7 @@ describe('functional tests that should', () => {
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
+        expect(screen.getByText(dummyTitle)).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'No' })).toBeInTheDocument()
       })
@@ -207,6 +215,7 @@ describe('functional tests that should', () => {
       Client.prototype.getContractState = jest.fn().mockResolvedValue(
         Promise.resolve<ContractStateResult>({
           fields: [
+            { value: dummyTitleHex },
             { value: '1' },
             { value: '1' },
             { value: true },
@@ -221,8 +230,8 @@ describe('functional tests that should', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Unlock Wallet' }))
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
-      const txInput = screen.getByLabelText('Contract transaction ID')
 
+      const txInput = screen.getByLabelText('Contract transaction ID')
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
       await waitFor(() => {
@@ -245,6 +254,7 @@ describe('functional tests that should', () => {
       Client.prototype.getContractState = jest.fn().mockResolvedValue(
         Promise.resolve<ContractStateResult>({
           fields: [
+            { value: dummyTitleHex },
             { value: '1' },
             { value: '1' },
             { value: true },
@@ -276,6 +286,7 @@ describe('functional tests that should', () => {
       Client.prototype.getContractState = jest.fn().mockResolvedValue(
         Promise.resolve<ContractStateResult>({
           fields: [
+            { value: dummyTitleHex },
             { value: '1' },
             { value: '1' },
             { value: false },

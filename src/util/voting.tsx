@@ -1,4 +1,5 @@
 import { VotingRef } from './client'
+import { strToHexString } from './util'
 
 const utxoFee = '50000000000000'
 export function createContract(nVoters: number): string {
@@ -9,6 +10,7 @@ export function createContract(nVoters: number): string {
   }
   return `
    TxContract Voting(
+     title: ByteVec,
      mut yes: U256,
      mut no: U256,
      mut isClosed: Bool,
@@ -82,6 +84,8 @@ export function closeVotingScript(votingRef: VotingRef, nVoters: number): string
   `
 }
 
-export function initContractState(adminAddress: string, voters: string[]): string {
-  return `[ 0, 0, false, false, @${adminAddress}, [${voters.map((voter) => `@${voter}`).join(', ')}]]`
+export function initContractState(title: string, adminAddress: string, voters: string[]): string {
+  return `[#${strToHexString(title)}, 0, 0, false, false, @${adminAddress}, [${voters
+    .map((voter) => `@${voter}`)
+    .join(', ')}]]`
 }

@@ -15,8 +15,8 @@ const Results = ({ contractTxId }: ResultsProps) => {
 
   if (context.apiClient) {
     context.apiClient.getContractState(contractTxId).then((state) => {
-      const tmpYes = state.fields[0] as U256
-      const tmpNo = state.fields[1] as U256
+      const tmpYes = state.fields[1] as U256
+      const tmpNo = state.fields[2] as U256
       setYes(tmpYes.value)
       setNo(tmpNo.value)
     })

@@ -22,7 +22,7 @@ export const Create = () => {
   const [txResult, setResult] = useState<TxResult | undefined>(undefined)
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
-
+  const [title, setTitle] = useState<string>('')
   const context = useContext(GlobalContext)
 
   function addressFromString(address: string): Address {
@@ -68,14 +68,16 @@ export const Create = () => {
 
   const submit = async () => {
     if (context.apiClient) {
-      if (admin == undefined) {
-        console.log('Please Provide an administrator address')
-        return Promise.resolve()
+      if (title == '') {
+        return Promise.reject('Please provide a title')
+      } else if (admin == undefined) {
+        return Promise.reject('Please Provide an administrator address')
       } else {
         const result = await context.apiClient.contractSubmissionPipeline(
           createContract(voters.length),
           CONTRACTGAS,
           initContractState(
+            title,
             admin?.address,
             voters.map((voter) => voter.address)
           ),
@@ -102,6 +104,15 @@ export const Create = () => {
       </div>
       {!txResult && (
         <Container>
+          <h2>
+            <label htmlFor="voting-title">Voting Title</label>
+          </h2>
+          <Input
+            id="voting-title"
+            placeholder="Please enter your question"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
           <h2>
             <label htmlFor="admin-address">Administrator Address</label>
           </h2>
