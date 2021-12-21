@@ -10,7 +10,7 @@ export function defaultSettings(): Settings {
     walletName: 'wallet-1',
     password: 'my-secret-password',
     nodeHost: 'http://127.0.0.1:12973',
-    explorerURL: 'http://127.0.0.1:3000'
+    explorerURL: 'https://testnet.alephium.org'
   }
 }
 

@@ -18,8 +18,8 @@ const Vote = () => {
   const { txId } = useParams<Params>()
   const getInitTxId = () => {
     let initTxId = txId ? txId : ''
-    if (context.currentContractId) {
-      initTxId = context.currentContractId
+    if (context.cache.currentContractId) {
+      initTxId = context.cache.currentContractId
     }
     return initTxId
   }
@@ -31,7 +31,7 @@ const Vote = () => {
 
   const load = async () => {
     if (context.apiClient) {
-      context.setCurrentContractId(contractAddress)
+      context.editCache({ currentContractId: contractAddress })
       const votingRef = await context.apiClient.getVotingMetaData(contractAddress)
       if (votingRef) {
         setVotingRef(votingRef)
@@ -65,7 +65,7 @@ const Vote = () => {
       content = <Results contractTxId={contractAddress} />
     }
   } else if (isClosed === false) {
-    content = <SubmitVote votingRef={votingRef} contractTxId={context.currentContractId} title={title} />
+    content = <SubmitVote votingRef={votingRef} contractTxId={context.cache.currentContractId} title={title} />
   }
   return content
 }

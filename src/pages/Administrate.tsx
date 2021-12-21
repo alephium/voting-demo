@@ -7,15 +7,10 @@ import { Input } from '../components/Inputs'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
-import { TypedStatus } from '../util/types'
+import { Action, TypedStatus } from '../util/types'
 
 type Params = {
   txId?: string
-}
-
-enum Action {
-  Allocate,
-  Close
 }
 
 const Administrate = () => {
@@ -23,29 +18,35 @@ const Administrate = () => {
   const context = useContext(GlobalContext)
   const getInitTxId = () => {
     let initTxId = txId ? txId : ''
-    if (context.currentContractId) {
-      initTxId = context.currentContractId
+    if (context.cache.currentContractId) {
+      initTxId = context.cache.currentContractId
     }
     return initTxId
   }
   const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
-  const [txResult, setResult] = useState<TxResult | undefined>(undefined)
+  const [txResult, setResult] = useState<TxResult | undefined>(context.cache.administrateTxResult)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
-  const [lastAction, setLastAction] = useState<Action | undefined>(undefined)
+  const [lastAction, setLastAction] = useState<Action | undefined>(context.cache.administrateAction)
+
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: TxResult) => {
+    context.apiClient?.getTxStatus(txResult.txId).then((fetchedStatus) => {
+      setTxStatus(fetchedStatus)
+      const status = fetchedStatus as TypedStatus
+      setTypedStatus(status)
+      clearIntervalIfConfirmed(fetchedStatus, interval)
+    })
+  }
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (txResult) {
-        context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
-          setTxStatus(fetchedStatus)
-          const status = fetchedStatus as TypedStatus
-          setTypedStatus(status)
-          clearIntervalIfConfirmed(fetchedStatus, interval)
-        })
-      }
-    }, 1000)
-    return () => clearInterval(interval)
+    if (txResult) {
+      context.editCache({ administrateTxResult: txResult })
+      const interval = setInterval(() => {
+        pollTxStatus(interval, txResult)
+      }, 1000)
+      pollTxStatus(interval, txResult)
+      return () => clearInterval(interval)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
@@ -55,9 +56,8 @@ const Administrate = () => {
       if (votingRef) {
         const numberVoters = await context.apiClient.getNVoters(contractAddress)
         await context.apiClient.scriptSubmissionPipeline(allocateTokenScript(votingRef, numberVoters)).then(setResult)
-
         setLastAction(Action.Allocate)
-        context.setCurrentContractId(contractAddress)
+        context.editCache({ currentContractId: contractAddress, administrateAction: Action.Allocate })
       }
     }
   }
@@ -68,7 +68,7 @@ const Administrate = () => {
         const numberVoters = await context.apiClient.getNVoters(contractAddress)
         await context.apiClient.scriptSubmissionPipeline(closeVotingScript(votingRef, numberVoters)).then(setResult)
         setLastAction(Action.Close)
-        context.setCurrentContractId(contractAddress)
+        context.editCache({ currentContractId: contractAddress, administrateAction: Action.Close })
       }
     }
   }
@@ -83,7 +83,7 @@ const Administrate = () => {
           </div>
         </Container>
       )}
-      {!txResult && (
+      {(!txResult || (typedStatus && typedStatus.type === 'confirmed')) && (
         <Container>
           <h2>
             <label htmlFor="tx-id">Contract transaction ID</label>
