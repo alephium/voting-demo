@@ -4,8 +4,8 @@ import { Container, Button } from '../../components/Common'
 import { Input } from '../../components/Inputs'
 import { VotingRef } from '../../util/client'
 import { useParams } from 'react-router-dom'
-import { Bool } from 'alephium-js/dist/api/api-alephium'
-import { catchAndAlert } from '../../util/util'
+import { Bool, ByteVec } from 'alephium-js/dist/api/api-alephium'
+import { catchAndAlert, hexStringToStr } from '../../util/util'
 import Results from './Results'
 import SubmitVote from './SubmitVote'
 
@@ -27,6 +27,7 @@ const Vote = () => {
   const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
   const [isClosed, setIsClosed] = useState<boolean | undefined>(undefined)
   const [votingRef, setVotingRef] = useState<VotingRef | undefined>(undefined)
+  const [title, setTitle] = useState<string>('')
 
   const load = async () => {
     if (context.apiClient) {
@@ -35,7 +36,9 @@ const Vote = () => {
       if (votingRef) {
         setVotingRef(votingRef)
         context.apiClient.getContractState(contractAddress).then((state) => {
-          const isClosed = (state.fields[2] as Bool).value
+          const encodedTitle = (state.fields[0] as ByteVec).value
+          setTitle(hexStringToStr(encodedTitle))
+          const isClosed = (state.fields[3] as Bool).value
           setIsClosed(isClosed)
         })
       }
@@ -62,7 +65,7 @@ const Vote = () => {
       content = <Results contractTxId={contractAddress} />
     }
   } else if (isClosed === false) {
-    content = <SubmitVote votingRef={votingRef} contractTxId={context.currentContractId} />
+    content = <SubmitVote votingRef={votingRef} contractTxId={context.currentContractId} title={title} />
   }
   return content
 }

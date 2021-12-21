@@ -33,7 +33,7 @@ const StyledInputDiv = styled.div`
   border-radius: 8px;
   background-color: rgb(247, 248, 250);
   color: rgba(15, 15, 15, 0.95);
-  margin-top: 5px;
+  margin-bottom: 5px;
 `
 const StyledInput = styled.input`
   border: none;

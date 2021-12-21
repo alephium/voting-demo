@@ -24,3 +24,11 @@ export function clearIntervalIfConfirmed(fetchedStatus: TxStatus, interval: Node
 export const isNotEmpty = (s: string): boolean => {
   return s !== '' ? true : false
 }
+
+export function strToHexString(str: string) {
+  return Buffer.from(str).toString('hex')
+}
+
+export function hexStringToStr(str: string) {
+  return Buffer.from(str, 'hex').toString()
+}

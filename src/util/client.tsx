@@ -205,7 +205,7 @@ class Client {
 
   getNVoters = async (txId: string): Promise<number> => {
     return this.getContractState(txId).then((result: ContractStateResult) => {
-      return result.fields.length - 5
+      return result.fields.length - 6
     })
   }
 }
