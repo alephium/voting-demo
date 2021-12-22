@@ -127,7 +127,6 @@ const MainContainer = styled.div`
   right: 0;
   left: 0;
   bottom: 0;
-  overflow: hidden;
   background-image: linear-gradient(#f9f4fc, #f8effc);
 `
 
@@ -143,7 +142,6 @@ const ContentContainer = styled.div`
   align-items: center;
   justify-content: center;
   display: flex;
-  overflow: hidden;
   font-family: Arial;
 `
 
@@ -162,6 +160,9 @@ const NavBar = styled.nav`
   background-color: white;
   border-radius: 16px;
   padding: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
 `
 
 const NavBarItem = styled(NavLink)`

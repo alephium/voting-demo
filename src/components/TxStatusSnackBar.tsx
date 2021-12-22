@@ -61,7 +61,6 @@ export const TxStatusSnackBar = ({ txStatus, txId }: TxStatusSnackBarProps) => {
 
 const StyledDiv = styled.div`
   margin-top: 50px;
-  margin-right: 100px;
 `
 
 export default TxStatusSnackBar
