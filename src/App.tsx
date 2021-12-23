@@ -76,60 +76,49 @@ const App = () => {
         editCache
       }}
     >
-      <MainContainer>
-        <ContentContainer>
-          <NavBarContainer>
-            <Logo src={logo}></Logo>
-            <NavBar>
-              <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Create
-              </NavBarItem>
-              <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Vote
-              </NavBarItem>
-              <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Administrate
-              </NavBarItem>
-            </NavBar>
-            <div>
-              <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
-              <Button onClick={handleConnectWallet}>Settings</Button>
-            </div>
-          </NavBarContainer>
-          <Switch>
-            <Route exact path="/">
-              <Create />
-            </Route>
-            <Route exact path="/vote/:txId">
-              <Vote />
-            </Route>
-            <Route path="/vote">
-              <Vote />
-            </Route>
-            <Route exact path="/administrate/:txId">
-              <Administrate />
-            </Route>
-            <Route path="/administrate">
-              <Administrate />
-            </Route>
-          </Switch>
-          <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
-        </ContentContainer>
-      </MainContainer>
+      <ContentContainer>
+        <NavBarContainer>
+          <Logo src={logo}></Logo>
+          <NavBar>
+            <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Create
+            </NavBarItem>
+            <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Vote
+            </NavBarItem>
+            <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Administrate
+            </NavBarItem>
+          </NavBar>
+          <div>
+            <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
+            <Button onClick={handleConnectWallet}>Settings</Button>
+          </div>
+        </NavBarContainer>
+        <Switch>
+          <Route exact path="/">
+            <Create />
+          </Route>
+          <Route exact path="/vote/:txId">
+            <Vote />
+          </Route>
+          <Route path="/vote">
+            <Vote />
+          </Route>
+          <Route exact path="/administrate/:txId">
+            <Administrate />
+          </Route>
+          <Route path="/administrate">
+            <Administrate />
+          </Route>
+        </Switch>
+        <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
+      </ContentContainer>
     </GlobalContext.Provider>
   )
 }
 
 /* Styles */
-const MainContainer = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  background-image: linear-gradient(#f9f4fc, #f8effc);
-`
-
 const Logo = styled.img`
   width: auto;
   height: 50px;
