@@ -137,6 +137,20 @@ describe('functional tests that should', () => {
       })
       fireEvent.click(screen.getByText('here'))
       await waitFor(() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
+      //check the results are cached
+      fireEvent.click(screen.getByText('Create'))
+      await waitFor(() => {
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Create a new voting contract' })).toBeInTheDocument()
+      })
+      //check the cache has been cleared
+      fireEvent.click(screen.getByRole('button', { name: 'Create a new voting contract' }))
+      await waitFor(() => {
+        expect(screen.queryByText('confirmed!')).not.toBeInTheDocument()
+        expect(screen.queryByText('here')).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: 'Create a new voting contract' })).not.toBeInTheDocument()
+        expect(screen.getByLabelText('Voting Title')).toBeInTheDocument()
+      })
     })
 
     it('display error message when a voter addres is in a incorrect group', async () => {
@@ -208,6 +222,14 @@ describe('functional tests that should', () => {
         )
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledTimes(1)
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
+      })
+      //check the results are cached
+      fireEvent.click(screen.getByText('Create'))
+      fireEvent.click(screen.getByText('Vote'))
+      fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
+      await waitFor(() => {
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Thanks for voting!')).toBeInTheDocument()
       })
     })
 
@@ -281,6 +303,13 @@ describe('functional tests that should', () => {
       fireEvent.click(screen.getByText('link'))
       const loadContractBtn = screen.getByRole('button', { name: 'Load Contract' })
       await waitFor(() => expect(loadContractBtn).toBeInTheDocument())
+      //check the results are cached
+      fireEvent.click(screen.getByText('Create'))
+      fireEvent.click(screen.getByText('Administrate'))
+      await waitFor(() => {
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('link')).toBeInTheDocument()
+      })
     })
 
     it('close voting', async () => {
@@ -310,6 +339,12 @@ describe('functional tests that should', () => {
         expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
           closeVotingScript(dummyVotingRef, nVoters)
         )
+        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+      })
+      //check the results are cached
+      fireEvent.click(screen.getByText('Create'))
+      fireEvent.click(screen.getByText('Administrate'))
+      await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
     })

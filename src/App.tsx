@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { Reducer, useEffect, useReducer, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
 import { Switch, Route, NavLink } from 'react-router-dom'
@@ -10,14 +10,15 @@ import { Button } from './components/Common'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
 import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
+import { emptyCache, Cache } from './util/types'
 
 export interface Context {
   settings: Settings
   setSettings: (s: Settings) => void
   apiClient?: Client
   setApiClient: (w: Client | undefined) => void
-  currentContractId: string | undefined
-  setCurrentContractId: (id: string) => void
+  cache: Cache
+  editCache: React.Dispatch<Partial<Cache>>
 }
 
 const initialContext: Context = {
@@ -25,8 +26,8 @@ const initialContext: Context = {
   setSettings: () => null,
   apiClient: undefined,
   setApiClient: () => null,
-  currentContractId: '',
-  setCurrentContractId: () => null
+  cache: emptyCache(),
+  editCache: () => null
 }
 
 export const GlobalContext = React.createContext<Context>(initialContext)
@@ -36,7 +37,11 @@ const App = () => {
   const [isModalOpened, setModal] = useState(false)
   const [settings, setSettings] = useState<Settings>(loadSettingsOrDefault())
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
-  const [currentContractId, setCurrentContractId] = useState<string | undefined>(undefined)
+  const editCacheReducer: Reducer<Cache, Partial<Cache>> = (prevCache: Cache, edits: Partial<Cache>) => ({
+    ...prevCache,
+    ...edits
+  })
+  const [cache, editCache] = useReducer(editCacheReducer, emptyCache())
 
   const handleCloseModal = () => {
     setModal(false)
@@ -67,65 +72,53 @@ const App = () => {
         setSettings,
         apiClient,
         setApiClient,
-        currentContractId,
-        setCurrentContractId
+        cache: cache,
+        editCache
       }}
     >
-      <MainContainer>
-        <ContentContainer>
-          <NavBarContainer>
-            <Logo src={logo}></Logo>
-            <NavBar>
-              <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Create
-              </NavBarItem>
-              <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Vote
-              </NavBarItem>
-              <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-                Administrate
-              </NavBarItem>
-            </NavBar>
-            <div>
-              <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
-              <Button onClick={handleConnectWallet}>Settings</Button>
-            </div>
-          </NavBarContainer>
-          <Switch>
-            <Route exact path="/">
-              <Create />
-            </Route>
-            <Route exact path="/vote/:txId">
-              <Vote />
-            </Route>
-            <Route path="/vote">
-              <Vote />
-            </Route>
-            <Route exact path="/administrate/:txId">
-              <Administrate />
-            </Route>
-            <Route path="/administrate">
-              <Administrate />
-            </Route>
-          </Switch>
-          <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
-        </ContentContainer>
-      </MainContainer>
+      <ContentContainer>
+        <NavBarContainer>
+          <Logo src={logo}></Logo>
+          <NavBar>
+            <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Create
+            </NavBarItem>
+            <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Vote
+            </NavBarItem>
+            <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
+              Administrate
+            </NavBarItem>
+          </NavBar>
+          <div>
+            <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
+            <Button onClick={handleConnectWallet}>Settings</Button>
+          </div>
+        </NavBarContainer>
+        <Switch>
+          <Route exact path="/">
+            <Create />
+          </Route>
+          <Route exact path="/vote/:txId">
+            <Vote />
+          </Route>
+          <Route path="/vote">
+            <Vote />
+          </Route>
+          <Route exact path="/administrate/:txId">
+            <Administrate />
+          </Route>
+          <Route path="/administrate">
+            <Administrate />
+          </Route>
+        </Switch>
+        <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
+      </ContentContainer>
     </GlobalContext.Provider>
   )
 }
 
 /* Styles */
-const MainContainer = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  overflow: hidden;
-  background-image: linear-gradient(#f9f4fc, #f8effc);
-`
-
 const Logo = styled.img`
   width: auto;
   height: 50px;
@@ -138,7 +131,6 @@ const ContentContainer = styled.div`
   align-items: center;
   justify-content: center;
   display: flex;
-  overflow: hidden;
   font-family: Arial;
 `
 
@@ -157,6 +149,9 @@ const NavBar = styled.nav`
   background-color: white;
   border-radius: 16px;
   padding: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
 `
 
 const NavBarItem = styled(NavLink)`

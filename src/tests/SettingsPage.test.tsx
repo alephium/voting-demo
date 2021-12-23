@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Context, GlobalContext as GlobalCtx } from '../App'
 import SettingsPage from '../pages/SettingsPage'
 import { loadSettingsOrDefault, Settings } from '../util/settings'
+import { emptyCache } from '../util/types'
 
 window.alert = jest.fn()
 
@@ -74,16 +75,18 @@ function setup() {
     setSettings: jest.fn(),
     apiClient: undefined,
     setApiClient: jest.fn(),
-    currentContractId: '',
-    setCurrentContractId: jest.fn()
+
+    cache: emptyCache(),
+    editCache: jest.fn()
   }
   const handleCloseModal = jest.fn()
   const settings = initialContext.settings
   const setSettings = initialContext.setSettings
   const apiClient = initialContext.apiClient
   const setApiClient = initialContext.setApiClient
-  const currentContractId = initialContext.currentContractId
-  const setCurrentContractId = initialContext.setCurrentContractId
+
+  const cache = initialContext.cache
+  const editCache = initialContext.editCache
   const GlobalContext = GlobalCtx
 
   render(
@@ -93,8 +96,8 @@ function setup() {
         setSettings,
         apiClient,
         setApiClient,
-        currentContractId,
-        setCurrentContractId
+        cache: cache,
+        editCache: editCache
       }}
     >
       <SettingsPage isModalOpen={true} handleCloseModal={() => handleCloseModal()} />
