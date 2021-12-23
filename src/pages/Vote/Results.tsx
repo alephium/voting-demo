@@ -26,7 +26,7 @@ const Results = ({ contractTxId }: ResultsProps) => {
   }
   return (
     <Container>
-      <p>The voting is already closed, here are the results:</p>
+      <p>The vote is already closed, here are the results:</p>
       <p>{title}</p>
       <p>Yes: {yes}</p>
       <p>No: {no}</p>
