@@ -49,9 +49,9 @@ export function createContract(nVoters: number): string {
 export function createVotingScript(choice: boolean, votingRef: VotingRef, nVoters: number): string {
   return `TxScript VotingScript {
       pub payable fn main() -> () {
-        let caller = txCaller!(txCallerSize!() - 1)
-        approveToken!(caller, #${votingRef.tokenId}, 1)
+        let caller = txCaller!(0)
         let voting = Voting(#${votingRef.tokenId})
+        approveToken!(caller, #${votingRef.tokenId}, 1)
         approveAlph!(caller, ${utxoFee})
         voting.vote(${choice}, caller)
       }
@@ -64,7 +64,7 @@ export function allocateTokenScript(votingRef: VotingRef, nVoters: number): stri
   return `TxScript TokenAllocation {
     pub payable fn main() -> () {
       let voting = Voting(#${votingRef.tokenId})
-      let caller = txCaller!(txCallerSize!() - 1)
+      let caller = txCaller!(0)
       approveAlph!(caller, ${utxoFee} * ${nVoters})
       voting.allocateTokens()
     }
