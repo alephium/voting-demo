@@ -17,7 +17,7 @@ import {
   ContractStateResult
 } from 'alephium-js/dist/api/api-alephium'
 
-export interface VotingRef {
+export interface ContractRef {
   contractAddress: string
   tokenId: string
 }
@@ -131,12 +131,7 @@ class Client {
     )
   }
 
-  async contractSubmissionPipeline(
-    contract: string,
-    gas: number,
-    state: string,
-    issueTokenAmount: string
-  ): Promise<TxResult> {
+  async deployContract(contract: string, gas: number, state: string, issueTokenAmount: string): Promise<TxResult> {
     return this.compileContract(contract)
       .then((compileResult) => this.buildContract(compileResult, gas, state, issueTokenAmount))
       .then(async (buildContract: BuildContractResult) => {
@@ -145,7 +140,7 @@ class Client {
       })
   }
 
-  async scriptSubmissionPipeline(script: string): Promise<TxResult> {
+  async deployScript(script: string): Promise<TxResult> {
     return this.compileScript(script)
       .then(this.buildScript)
       .then(async (buildScriptResult: BuildScriptResult) => {
@@ -162,7 +157,7 @@ class Client {
     )
   }
 
-  getVotingMetaData = async (txId: string): Promise<VotingRef> => {
+  getContractRef = async (txId: string): Promise<ContractRef> => {
     const txStatus = await this.fetch(
       this.api.transactions.getTransactionsStatus({
         txId: txId
@@ -198,9 +193,9 @@ class Client {
   }
 
   getContractState = async (txId: string): Promise<ContractStateResult> => {
-    const votingRef = await this.getVotingMetaData(txId)
-    const group = await this.fetch(this.api.addresses.getAddressesAddressGroup(votingRef.contractAddress))
-    return this.fetch(this.api.contracts.getContractsAddressState(votingRef.contractAddress, { group: group.group }))
+    const contractRef = await this.getContractRef(txId)
+    const group = await this.fetch(this.api.addresses.getAddressesAddressGroup(contractRef.contractAddress))
+    return this.fetch(this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group }))
   }
 
   getNVoters = async (txId: string): Promise<number> => {

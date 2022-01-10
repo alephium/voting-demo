@@ -23,7 +23,7 @@ const Administrate = () => {
     }
     return initTxId
   }
-  const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
+  const [contractTxId, setContractTxId] = useState<string>(getInitTxId())
   const [txResult, setResult] = useState<TxResult | undefined>(context.cache.administrateTxResult)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
@@ -52,23 +52,23 @@ const Administrate = () => {
 
   const allocateTokens = async () => {
     if (context.apiClient) {
-      const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
-      if (votingRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractAddress)
-        await context.apiClient.scriptSubmissionPipeline(allocateTokenScript(votingRef, numberVoters)).then(setResult)
+      const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
+      if (contractRef) {
+        const numberVoters = await context.apiClient.getNVoters(contractTxId)
+        await context.apiClient.deployScript(allocateTokenScript(contractRef, numberVoters)).then(setResult)
         setLastAction(Action.Allocate)
-        context.editCache({ currentContractId: contractAddress, administrateAction: Action.Allocate })
+        context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
       }
     }
   }
   const close = async () => {
     if (context.apiClient) {
-      const votingRef = await context.apiClient.getVotingMetaData(contractAddress).catch((e) => console.log(e))
-      if (votingRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractAddress)
-        await context.apiClient.scriptSubmissionPipeline(closeVotingScript(votingRef, numberVoters)).then(setResult)
+      const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
+      if (contractRef) {
+        const numberVoters = await context.apiClient.getNVoters(contractTxId)
+        await context.apiClient.deployScript(closeVotingScript(contractRef, numberVoters)).then(setResult)
         setLastAction(Action.Close)
-        context.editCache({ currentContractId: contractAddress, administrateAction: Action.Close })
+        context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
       }
     }
   }
@@ -79,7 +79,7 @@ const Administrate = () => {
       {txResult?.txId && typedStatus && typedStatus.type === 'confirmed' && lastAction === Action.Allocate && (
         <Container>
           <div style={{ flexDirection: 'row' }}>
-            Share this<NavLink to={`/vote/${contractAddress}`}> link </NavLink> to the voters.
+            Share this<NavLink to={`/vote/${contractTxId}`}> link </NavLink> to the voters.
           </div>
         </Container>
       )}
@@ -91,8 +91,8 @@ const Administrate = () => {
           <Input
             id="tx-id"
             placeholder="Please enter the contract deployment transaction ID"
-            value={contractAddress}
-            onChange={(e) => setContractAddress(e.target.value)}
+            value={contractTxId}
+            onChange={(e) => setContractTxId(e.target.value)}
           />
           <Button onClick={() => catchAndAlert(allocateTokens())}>Allocate Tokens</Button>
           <Button onClick={() => catchAndAlert(close())}>Close voting</Button>

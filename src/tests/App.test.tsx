@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { Confirmed, ContractStateResult, TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../App'
-import Client, { CONTRACTGAS, VotingRef } from '../util/client'
+import Client, { CONTRACTGAS, ContractRef } from '../util/client'
 import { Address } from '../util/types'
 import { strToHexString } from '../util/util'
 import {
@@ -10,7 +10,7 @@ import {
   closeVotingScript,
   createContract,
   createVotingScript,
-  initContractState
+  initialContractState
 } from '../util/voting'
 
 jest.mock('../util/client')
@@ -36,7 +36,7 @@ describe('functional tests that should', () => {
     type: 'confirmed',
     ...dummyConfirmed
   }
-  const dummyVotingRef = {
+  const dummyContractRef: ContractRef = {
     contractAddress: dummyTxResult.txId,
     tokenId: '109b05391a240a0d21671720f62fe39138aaca562676053900b348a51e11ba25'
   }
@@ -55,10 +55,10 @@ describe('functional tests that should', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     Client.prototype.walletUnlock = jest.fn().mockResolvedValue(Promise.resolve())
-    Client.prototype.scriptSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
-    Client.prototype.contractSubmissionPipeline = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
+    Client.prototype.deployScript = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
+    Client.prototype.deployContract = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
     Client.prototype.getTxStatus = jest.fn().mockResolvedValue(Promise.resolve(dummyTxStatus))
-    Client.prototype.getVotingMetaData = jest.fn().mockResolvedValue(Promise.resolve<VotingRef>(dummyVotingRef))
+    Client.prototype.getContractRef = jest.fn().mockResolvedValue(Promise.resolve<ContractRef>(dummyContractRef))
     Client.prototype.getNVoters = jest.fn().mockResolvedValue(Promise.resolve(nVoters))
   })
 
@@ -121,17 +121,17 @@ describe('functional tests that should', () => {
 
       fireEvent.click(submitBtn)
       await waitFor(() => {
-        expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledWith(
+        expect(Client.prototype.deployContract).toHaveBeenCalledWith(
           createContract(voters.length),
           CONTRACTGAS,
-          initContractState(
+          initialContractState(
             dummyTitle,
             admin.address,
             voters.map((v) => v.address)
           ),
           voters.length.toString()
         )
-        expect(Client.prototype.contractSubmissionPipeline).toHaveBeenCalledTimes(1)
+        expect(Client.prototype.deployContract).toHaveBeenCalledTimes(1)
         expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
@@ -217,10 +217,8 @@ describe('functional tests that should', () => {
       })
       fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
       await waitFor(() => {
-        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
-          createVotingScript(true, dummyVotingRef, nVoters)
-        )
-        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledTimes(1)
+        expect(Client.prototype.deployScript).toHaveBeenCalledWith(createVotingScript(true, dummyContractRef, nVoters))
+        expect(Client.prototype.deployScript).toHaveBeenCalledTimes(1)
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       //check the results are cached
@@ -294,9 +292,7 @@ describe('functional tests that should', () => {
       await waitFor(() => expect(Client.prototype.walletUnlock).toHaveBeenCalledTimes(1))
       fireEvent.click(screen.getByRole('button', { name: 'Allocate Tokens' }))
       await waitFor(() => {
-        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
-          allocateTokenScript(dummyVotingRef, nVoters)
-        )
+        expect(Client.prototype.deployScript).toHaveBeenCalledWith(allocateTokenScript(dummyContractRef, nVoters))
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
       })
@@ -335,10 +331,8 @@ describe('functional tests that should', () => {
       fireEvent.change(txInput, { target: { value: dummyTxResult.txId } })
       fireEvent.click(screen.getByRole('button', { name: 'Close voting' }))
       await waitFor(() => {
-        expect(Client.prototype.getVotingMetaData).toHaveBeenCalledWith(dummyTxResult.txId)
-        expect(Client.prototype.scriptSubmissionPipeline).toHaveBeenCalledWith(
-          closeVotingScript(dummyVotingRef, nVoters)
-        )
+        expect(Client.prototype.getContractRef).toHaveBeenCalledWith(dummyTxResult.txId)
+        expect(Client.prototype.deployScript).toHaveBeenCalledWith(closeVotingScript(dummyContractRef, nVoters))
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       //check the results are cached

@@ -2,7 +2,7 @@ import { useContext, useState } from 'react'
 import { GlobalContext } from '../../App'
 import { Container, Button } from '../../components/Common'
 import { Input } from '../../components/Inputs'
-import { VotingRef } from '../../util/client'
+import { ContractRef } from '../../util/client'
 import { useParams } from 'react-router-dom'
 import { Bool, ByteVec } from 'alephium-js/dist/api/api-alephium'
 import { catchAndAlert, hexStringToStr } from '../../util/util'
@@ -24,18 +24,18 @@ const Vote = () => {
     return initTxId
   }
 
-  const [contractAddress, setContractAddress] = useState<string>(getInitTxId())
+  const [contractTxId, setContractTxId] = useState<string>(getInitTxId())
   const [isClosed, setIsClosed] = useState<boolean | undefined>(undefined)
-  const [votingRef, setVotingRef] = useState<VotingRef | undefined>(undefined)
+  const [contractRef, setContractRef] = useState<ContractRef | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
 
   const load = async () => {
     if (context.apiClient) {
-      context.editCache({ currentContractId: contractAddress })
-      const votingRef = await context.apiClient.getVotingMetaData(contractAddress)
-      if (votingRef) {
-        setVotingRef(votingRef)
-        context.apiClient.getContractState(contractAddress).then((state) => {
+      context.editCache({ currentContractId: contractTxId })
+      const contractRef = await context.apiClient.getContractRef(contractTxId)
+      if (contractRef) {
+        setContractRef(contractRef)
+        context.apiClient.getContractState(contractTxId).then((state) => {
           const encodedTitle = (state.fields[0] as ByteVec).value
           setTitle(hexStringToStr(encodedTitle))
           const isClosed = (state.fields[3] as Bool).value
@@ -53,8 +53,8 @@ const Vote = () => {
       <Input
         id="txId"
         placeholder="Please enter the contract deployment transaction ID"
-        value={contractAddress}
-        onChange={(e) => setContractAddress(e.target.value)}
+        value={contractTxId}
+        onChange={(e) => setContractTxId(e.target.value)}
       />
       <Button onClick={() => catchAndAlert(load())}>Load Contract</Button>
     </Container>
@@ -62,10 +62,10 @@ const Vote = () => {
 
   if (isClosed === true) {
     if (context.apiClient) {
-      content = <Results contractTxId={contractAddress} />
+      content = <Results contractTxId={contractTxId} />
     }
   } else if (isClosed === false) {
-    content = <SubmitVote votingRef={votingRef} contractTxId={context.cache.currentContractId} title={title} />
+    content = <SubmitVote contractRef={contractRef} contractTxId={context.cache.currentContractId} title={title} />
   }
   return content
 }
