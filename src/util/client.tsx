@@ -179,17 +179,18 @@ class Client {
               contractAddress: contractAddress,
               tokenId: tokenId
             }
+          } else {
+            return Promise.reject<ContractRef>('The contract address is undefined')
           }
         } else {
-          console.log('No token found')
+          return Promise.reject<ContractRef>('No token found')
         }
       } else {
-        console.log('no contract found')
+        return Promise.reject<ContractRef>('No contract found')
       }
     } else {
-      console.log('not confirmed yet')
+      return Promise.reject<ContractRef>('Not confirmed yet')
     }
-    return Promise.reject()
   }
 
   getContractState = async (txId: string): Promise<ContractStateResult> => {
