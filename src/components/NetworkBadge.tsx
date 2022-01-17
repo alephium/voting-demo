@@ -41,7 +41,8 @@ const Badge = styled.button`
   border-width: 1px;
   border-style: solid;
   border-color: #e7e7e7;
-
+  padding-left: 10px;
+  padding-right: 10px;
   margin-left: 20px;
   padding-top: 0px;
   height: 30px;
