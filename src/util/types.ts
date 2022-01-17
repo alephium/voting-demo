@@ -36,3 +36,10 @@ export function emptyCache(): Cache {
     administrateAction: undefined
   }
 }
+
+export enum NetworkType {
+  MAINNET,
+  TESTNET,
+  UNKNOWN,
+  UNREACHABLE
+}
