@@ -1,46 +1,57 @@
-# Getting Started with Create React App
+# Voting dApp on Alephium
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a simple voting dApp built on the Alephium blockchain.
 
-## Available Scripts
+It implements a very simple token-based voting protocol where each voter receives a single token that he can spend to vote `yes` or `no` to a proposal. Once the voting period is over, the administrator closes the voting and votes will no longer be accepted.
 
-In the project directory, you can run:
+> *Disclaimer: The code and protocol provided in this project are intended to be run on the **testnet** and are for educational purposes only. We are not responsible for any loss of **ALPH** tokens by running it on the mainnet.*
 
-### `npm start`
+If you want to learn how to build dApps on Alephium, we provide you a tutorial to guide you through the process of building a minimalist version of this voting app [here](https://github.com/alephium/voting-tutorial).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Installation
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Local node setup
 
-### `npm test`
+Please install and run locally a node on the **testnet** following [this guide](https://wiki.alephium.org/Testnet-Guide.html). Then create a miner wallet as described [here](https://wiki.alephium.org/GPU-Miner-Guide.html) if you don't have one yet. Miner wallets have one address per group, hence 4 addresses. You can easily obtain coins on the testnet by running [the CPU miner](https://wiki.alephium.org/CPU-Miner-Guide.html) with the addresses of one of your wallets.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+> **WARNING: Make sure your node is running on the TESTNET before going any further.**
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Running
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Install the dApp frontend with
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+$ npm install
+```
 
-### `npm run eject`
+Run it with:
+```
+$ npm run start
+```
+Open [http://localhost:3000](http://localhost:3000) to view the following app  in the browser
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+<img title="demo" src="./assets/full-app.JPG" alt="Full application screenshot" >
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Usage
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Setup your wallet
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Click on the settings button and enter your wallet name and password.
 
-## Learn More
+### As an administrator
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+In the homepage, fill the inputs with a voting title the address of the administrator. The administrator is the person responsible for allocating the voting tokens to each voter and to close the voting. Then enter the address of each voter (the administrator can also be in the list of voters). Their addresses must be in the same group as the administrator address. Click submit to deploy the voting contract on the blockchain. When the transaction is confirmed, you can allocate the tokens or close the voting in the administrate section. Once the token allocation is done, you can share obtained voting link to the voters.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### As a voter
+
+Open the voting link sent by the administrator, it should redirect you to the `Vote` section with the page input pre-filled. Click on the button `Load Contract`. You will be able to vote if the administrator did not close the voting.Otherwise you will see the voting results.
+
+## Testing
+
+Run the test suite with:
+
+```
+$ npm test
+```
+
