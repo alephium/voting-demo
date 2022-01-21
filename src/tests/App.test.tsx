@@ -1,9 +1,9 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Confirmed, ContractStateResult, TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../App'
 import Client, { CONTRACTGAS, ContractRef } from '../util/client'
-import { Address } from '../util/types'
+import { Address, NetworkType } from '../util/types'
 import { strToHexString } from '../util/util'
 import {
   allocateTokenScript,
@@ -53,29 +53,34 @@ describe('functional tests that should', () => {
   const nVoters = voters.length
 
   beforeEach(() => {
-    jest.useFakeTimers()
+    jest.useFakeTimers('modern')
+    jest.spyOn(global, 'setInterval')
     Client.prototype.walletUnlock = jest.fn().mockResolvedValue(Promise.resolve())
     Client.prototype.deployScript = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
     Client.prototype.deployContract = jest.fn().mockResolvedValue(Promise.resolve<TxResult>(dummyTxResult))
     Client.prototype.getTxStatus = jest.fn().mockResolvedValue(Promise.resolve(dummyTxStatus))
     Client.prototype.getContractRef = jest.fn().mockResolvedValue(Promise.resolve<ContractRef>(dummyContractRef))
     Client.prototype.getNVoters = jest.fn().mockResolvedValue(Promise.resolve(nVoters))
+    Client.prototype.getNetworkType = jest.fn().mockResolvedValue(Promise.resolve(NetworkType.TESTNET))
   })
 
   afterEach(() => {
-    // Running all pending timers and switching to real timers using Jest
-    jest.runOnlyPendingTimers()
-    jest.useRealTimers()
     jest.resetModules()
   })
 
   describe('open the create page and', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       render(
         <MemoryRouter>
           <App />
         </MemoryRouter>
       )
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Testnet' })).toBeInTheDocument()
+      })
     })
 
     it('render the page', () => {
@@ -132,13 +137,23 @@ describe('functional tests that should', () => {
           voters.length.toString()
         )
         expect(Client.prototype.deployContract).toHaveBeenCalledTimes(1)
+      })
+      // Advance timer for TxStatus polling
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
         expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('here'))
       await waitFor(() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
-      //check the results are cached
+      // Go back to create to check the results are cached
       fireEvent.click(screen.getByText('Create'))
+      // Advance timer for TxStatus polling
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
       await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Create a new voting contract' })).toBeInTheDocument()
@@ -180,12 +195,19 @@ describe('functional tests that should', () => {
   })
 
   describe('open the voting page and', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       render(
         <MemoryRouter initialEntries={['/vote']}>
           <App />
         </MemoryRouter>
       )
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
+        expect(Client.prototype.getNetworkType).toHaveBeenCalled()
+        expect(screen.getByText('Testnet')).toBeInTheDocument()
+      })
     })
 
     it('deploy the voting script', async () => {
@@ -219,12 +241,24 @@ describe('functional tests that should', () => {
       await waitFor(() => {
         expect(Client.prototype.deployScript).toHaveBeenCalledWith(createVotingScript(true, dummyContractRef, nVoters))
         expect(Client.prototype.deployScript).toHaveBeenCalledTimes(1)
+      })
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
+        expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       //check the results are cached
       fireEvent.click(screen.getByText('Create'))
       fireEvent.click(screen.getByText('Vote'))
       fireEvent.click(screen.getByRole('button', { name: 'Load Contract' }))
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: 'Load Contract' })).not.toBeInTheDocument()
+      })
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
       await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByText('Thanks for voting!')).toBeInTheDocument()
@@ -263,12 +297,19 @@ describe('functional tests that should', () => {
   })
 
   describe('open the administrate page and', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       render(
         <MemoryRouter initialEntries={['/administrate']}>
           <App />
         </MemoryRouter>
       )
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
+        expect(Client.prototype.getNetworkType).toHaveBeenCalled()
+        expect(screen.getByText('Testnet')).toBeInTheDocument()
+      })
     })
 
     it('allocate tokens', async () => {
@@ -278,8 +319,8 @@ describe('functional tests that should', () => {
             { value: dummyTitleHex },
             { value: '1' },
             { value: '1' },
-            { value: true },
             { value: false },
+            { value: true },
             { value: admin.address },
             { value: voters[0].address },
             { value: voters[1].address },
@@ -293,6 +334,12 @@ describe('functional tests that should', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Allocate Tokens' }))
       await waitFor(() => {
         expect(Client.prototype.deployScript).toHaveBeenCalledWith(allocateTokenScript(dummyContractRef, nVoters))
+        expect(screen.queryByText('Allocate tokens')).not.toBeInTheDocument()
+      })
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
       })
@@ -302,6 +349,9 @@ describe('functional tests that should', () => {
       //check the results are cached
       fireEvent.click(screen.getByText('Create'))
       fireEvent.click(screen.getByText('Administrate'))
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
       await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
@@ -333,11 +383,19 @@ describe('functional tests that should', () => {
       await waitFor(() => {
         expect(Client.prototype.getContractRef).toHaveBeenCalledWith(dummyTxResult.txId)
         expect(Client.prototype.deployScript).toHaveBeenCalledWith(closeVotingScript(dummyContractRef, nVoters))
+      })
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
+      await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })
       //check the results are cached
       fireEvent.click(screen.getByText('Create'))
       fireEvent.click(screen.getByText('Administrate'))
+      act(() => {
+        jest.runOnlyPendingTimers()
+      })
       await waitFor(() => {
         expect(screen.getByText('confirmed!')).toBeInTheDocument()
       })

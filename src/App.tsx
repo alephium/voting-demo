@@ -10,7 +10,8 @@ import { Button } from './components/Common'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
 import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
-import { emptyCache, Cache } from './util/types'
+import { emptyCache, Cache, NetworkType } from './util/types'
+import { NetworkBadge } from './components/NetworkBadge'
 
 export interface Context {
   settings: Settings
@@ -42,7 +43,7 @@ const App = () => {
     ...edits
   })
   const [cache, editCache] = useReducer(editCacheReducer, emptyCache())
-
+  const [networkType, setNetworkType] = useState<NetworkType | undefined>(undefined)
   const handleCloseModal = () => {
     setModal(false)
   }
@@ -51,10 +52,27 @@ const App = () => {
     setModal(true)
   }
 
+  const pollNetworkType = (client: Client) => {
+    client
+      .getNetworkType()
+      .then(setNetworkType)
+      .catch(() => setNetworkType(NetworkType.UNREACHABLE))
+  }
+
   useEffect(() => {
     setApiClient(new Client(settings.nodeHost, settings.walletName, settings.password))
     saveSettings(settings)
   }, [settings])
+
+  useEffect(() => {
+    if (apiClient) {
+      const interval = setInterval(() => {
+        pollNetworkType(apiClient)
+      }, 15000)
+      pollNetworkType(apiClient)
+      return () => clearInterval(interval)
+    }
+  }, [apiClient])
 
   const walletUnlock = () => {
     if (apiClient) {
@@ -78,7 +96,10 @@ const App = () => {
     >
       <ContentContainer>
         <NavBarContainer>
-          <Logo src={logo}></Logo>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <Logo src={logo}></Logo>
+            {networkType !== undefined && <NetworkBadge networkType={networkType} />}
+          </div>
           <NavBar>
             <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
               Create
