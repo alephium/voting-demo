@@ -3,7 +3,7 @@ import { Container, Button } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { useContext } from 'react'
 import { GlobalContext } from '../App'
-import { createContract, initContractState } from '../util/voting'
+import { createContract, initialContractState } from '../util/voting'
 import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
@@ -91,10 +91,10 @@ export const Create = () => {
       } else if (admin == undefined) {
         return Promise.reject('Please Provide an administrator address')
       } else {
-        const result = await context.apiClient.contractSubmissionPipeline(
+        const result = await context.apiClient.deployContract(
           createContract(voters.length),
           CONTRACTGAS,
-          initContractState(
+          initialContractState(
             title,
             admin?.address,
             voters.map((voter) => voter.address)

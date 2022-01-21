@@ -3,18 +3,18 @@ import { useContext, useState, useEffect } from 'react'
 import { GlobalContext } from '../../App'
 import { Container, Button } from '../../components/Common'
 import TxStatusSnackBar from '../../components/TxStatusSnackBar'
-import { VotingRef } from '../../util/client'
+import { ContractRef } from '../../util/client'
 import { TypedStatus } from '../../util/types'
 import { clearIntervalIfConfirmed, catchAndAlert } from '../../util/util'
 import { createVotingScript } from '../../util/voting'
 
 interface SubmitVoteProps {
-  votingRef?: VotingRef
+  contractRef?: ContractRef
   contractTxId?: string
   title: string
 }
 
-const SubmitVote = ({ votingRef, contractTxId, title }: SubmitVoteProps) => {
+const SubmitVote = ({ contractRef, contractTxId, title }: SubmitVoteProps) => {
   const context = useContext(GlobalContext)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [txResult, setResult] = useState<TxResult | undefined>(context.cache.voteTxResult)
@@ -41,10 +41,10 @@ const SubmitVote = ({ votingRef, contractTxId, title }: SubmitVoteProps) => {
   }, [txResult])
 
   const vote = async (choice: boolean) => {
-    if (votingRef && context.apiClient && contractTxId) {
+    if (contractRef && context.apiClient && contractTxId) {
       const nVoters = await context.apiClient.getNVoters(contractTxId)
-      const txScript = createVotingScript(choice, votingRef, nVoters)
-      catchAndAlert(context.apiClient.scriptSubmissionPipeline(txScript).then(setResult))
+      const txScript = createVotingScript(choice, contractRef, nVoters)
+      catchAndAlert(context.apiClient.deployScript(txScript).then(setResult))
     }
   }
   return (

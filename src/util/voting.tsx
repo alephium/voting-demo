@@ -1,4 +1,4 @@
-import { VotingRef } from './client'
+import { ContractRef } from './client'
 import { strToHexString } from './util'
 
 const utxoFee = '50000000000000'
@@ -46,12 +46,12 @@ export function createContract(nVoters: number): string {
     }`
 }
 
-export function createVotingScript(choice: boolean, votingRef: VotingRef, nVoters: number): string {
+export function createVotingScript(choice: boolean, contractRef: ContractRef, nVoters: number): string {
   return `TxScript VotingScript {
       pub payable fn main() -> () {
-        let caller = txCaller!(txCallerSize!() - 1)
-        approveToken!(caller, #${votingRef.tokenId}, 1)
-        let voting = Voting(#${votingRef.tokenId})
+        let caller = txCaller!(0)
+        let voting = Voting(#${contractRef.tokenId})
+        approveToken!(caller, #${contractRef.tokenId}, 1)
         approveAlph!(caller, ${utxoFee})
         voting.vote(${choice}, caller)
       }
@@ -60,11 +60,11 @@ export function createVotingScript(choice: boolean, votingRef: VotingRef, nVoter
     `
 }
 
-export function allocateTokenScript(votingRef: VotingRef, nVoters: number): string {
+export function allocateTokenScript(contractRef: ContractRef, nVoters: number): string {
   return `TxScript TokenAllocation {
     pub payable fn main() -> () {
-      let voting = Voting(#${votingRef.tokenId})
-      let caller = txCaller!(txCallerSize!() - 1)
+      let voting = Voting(#${contractRef.tokenId})
+      let caller = txCaller!(0)
       approveAlph!(caller, ${utxoFee} * ${nVoters})
       voting.allocateTokens()
     }
@@ -73,10 +73,10 @@ export function allocateTokenScript(votingRef: VotingRef, nVoters: number): stri
   `
 }
 
-export function closeVotingScript(votingRef: VotingRef, nVoters: number): string {
+export function closeVotingScript(contractRef: ContractRef, nVoters: number): string {
   return `TxScript ClosingScript {
     pub payable fn main() -> () {
-      let voting = Voting(#${votingRef.tokenId})
+      let voting = Voting(#${contractRef.tokenId})
       voting.close()
     }
   }
@@ -84,7 +84,7 @@ export function closeVotingScript(votingRef: VotingRef, nVoters: number): string
   `
 }
 
-export function initContractState(title: string, adminAddress: string, voters: string[]): string {
+export function initialContractState(title: string, adminAddress: string, voters: string[]): string {
   return `[#${strToHexString(title)}, 0, 0, false, false, @${adminAddress}, [${voters
     .map((voter) => `@${voter}`)
     .join(', ')}]]`
