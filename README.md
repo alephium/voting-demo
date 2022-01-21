@@ -16,7 +16,6 @@ Please install and run locally a node on the **testnet** following [this guide](
 
 > **WARNING: Make sure your node is running on the TESTNET before going any further.**
 
-
 ### Running
 
 Install the dApp frontend with
@@ -41,11 +40,11 @@ Click on the settings button and enter your wallet name and password.
 
 ### As an administrator
 
-In the homepage, fill the inputs with a voting title the address of the administrator. The administrator is the person responsible for allocating the voting tokens to each voter and to close the voting. Then enter the address of each voter (the administrator can also be in the list of voters). Their addresses must be in the same group as the administrator address. Click submit to deploy the voting contract on the blockchain. When the transaction is confirmed, you can allocate the tokens or close the voting in the administrate section. Once the token allocation is done, you can share obtained voting link to the voters.
+In the homepage, fill the first two  inputs with a voting title and the address of the administrator. The administrator is the person responsible for allocating the voting tokens to each voter and to close the voting. Then enter the address of each voter (the administrator can also be in the list of voters). Their addresses must be in the same group as the administrator address. Click submit to deploy the voting contract on the blockchain. When the transaction is confirmed, you can allocate the tokens or close the voting in the administrate section. Once the token allocation is done, you can share obtained voting link to the voters.
 
 ### As a voter
 
-Open the voting link sent by the administrator, it should redirect you to the `Vote` section with the page input pre-filled. Click on the button `Load Contract`. You will be able to vote if the administrator did not close the voting.Otherwise you will see the voting results.
+Open the voting link sent by the administrator, it should redirect you to the `Vote` section with the page input pre-filled. Click on the button `Load Contract`. You will be able to vote if the administrator did not close the voting. Otherwise you will see the voting results.
 
 ## Testing
 
