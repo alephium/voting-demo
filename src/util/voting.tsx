@@ -1,3 +1,4 @@
+import { Val } from 'alephium-js/dist/api/api-alephium'
 import { ContractRef } from './client'
 import { strToHexString } from './util'
 
@@ -84,8 +85,14 @@ export function closeVotingScript(contractRef: ContractRef, nVoters: number): st
   `
 }
 
-export function initialContractState(title: string, adminAddress: string, voters: string[]): string {
-  return `[#${strToHexString(title)}, 0, 0, false, false, @${adminAddress}, [${voters
-    .map((voter) => `@${voter}`)
-    .join(', ')}]]`
+export function initialContractState(title: string, adminAddress: string, voters: string[]): Val[] {
+  return [
+    { type: 'ByteVec', value: `#${strToHexString(title)}` },
+    { type: 'U256', value: '0' },
+    { type: 'U256', value: '0' },
+    { type: 'Bool', value: false },
+    { type: 'Bool', value: false },
+    { type: 'Address', value: `@${adminAddress}` },
+    { type: 'Address[]', value: `[${voters.map((voter) => `@${voter}`).join(', ')}]` }
+  ]
 }
