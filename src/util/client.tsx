@@ -110,10 +110,9 @@ class Client {
 
   buildScript = async (compileResult: CompileResult, gas: number = CONTRACTGAS): Promise<BuildScriptTxResult> => {
     return this.fetch(
-      this.api.contracts.postContractsUnsignedTxBuildContract({
+      this.api.contracts.postContractsUnsignedTxBuildScript({
         fromPublicKey: await this.getPublicKey(),
         bytecode: compileResult.bytecode,
-        initialFields: [],
         gas: gas
       })
     )

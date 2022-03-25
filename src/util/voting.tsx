@@ -86,13 +86,14 @@ export function closeVotingScript(contractRef: ContractRef, nVoters: number): st
 }
 
 export function initialContractState(title: string, adminAddress: string, voters: string[]): Val[] {
+  console.log(voters)
   return [
-    { type: 'ByteVec', value: `#${strToHexString(title)}` },
+    { type: 'ByteVec', value: `${strToHexString(title)}` },
     { type: 'U256', value: '0' },
     { type: 'U256', value: '0' },
     { type: 'Bool', value: false },
     { type: 'Bool', value: false },
-    { type: 'Address', value: `@${adminAddress}` },
-    { type: 'Address[]', value: `[${voters.map((voter) => `@${voter}`).join(', ')}]` }
+    { type: 'Address', value: `${adminAddress}` },
+    { type: 'Array', value: voters.map((voter) => ({ type: 'Address', value: `${voter}` })) }
   ]
 }
