@@ -111,7 +111,7 @@ export const Create = () => {
   return (
     <div>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
-      {txResult?.txId && typedStatus && typedStatus.type == 'confirmed' && (
+      {txResult?.txId && typedStatus && typedStatus.type == 'Confirmed' && (
         <>
           <Container>
             <div style={{ flexDirection: 'row' }}>

@@ -26,7 +26,7 @@ export const TxStatusSnackBar = ({ txStatus, txId }: TxStatusSnackBarProps) => {
             >
               Transaction
             </a>
-            &nbsp; confirmed!
+            &nbsp; Confirmed!
           </Alert>
         </StyledDiv>
       )
