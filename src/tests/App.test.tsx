@@ -33,7 +33,7 @@ describe('functional tests that should', () => {
   }
 
   const dummyTxStatus: TxStatus = {
-    type: 'confirmed',
+    type: 'Confirmed',
     ...dummyConfirmed
   }
   const dummyContractRef: ContractRef = {
@@ -144,7 +144,7 @@ describe('functional tests that should', () => {
       })
       await waitFor(() => {
         expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('here'))
       await waitFor(() => expect(screen.getByRole('button', { name: 'Close voting' })).toBeInTheDocument())
@@ -155,13 +155,13 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Create a new voting contract' })).toBeInTheDocument()
       })
       //check the cache has been cleared
       fireEvent.click(screen.getByRole('button', { name: 'Create a new voting contract' }))
       await waitFor(() => {
-        expect(screen.queryByText('confirmed!')).not.toBeInTheDocument()
+        expect(screen.queryByText('Confirmed!')).not.toBeInTheDocument()
         expect(screen.queryByText('here')).not.toBeInTheDocument()
         expect(screen.queryByRole('button', { name: 'Create a new voting contract' })).not.toBeInTheDocument()
         expect(screen.getByLabelText('Voting Title')).toBeInTheDocument()
@@ -247,7 +247,7 @@ describe('functional tests that should', () => {
       })
       await waitFor(() => {
         expect(Client.prototype.getTxStatus).toHaveBeenCalledTimes(1)
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
       })
       //check the results are cached
       fireEvent.click(screen.getByText('Create'))
@@ -260,7 +260,7 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
         expect(screen.getByText('Thanks for voting!')).toBeInTheDocument()
       })
     })
@@ -340,7 +340,7 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
       })
       fireEvent.click(screen.getByText('link'))
@@ -353,7 +353,7 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
         expect(screen.getByText('link')).toBeInTheDocument()
       })
     })
@@ -388,7 +388,7 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
       })
       //check the results are cached
       fireEvent.click(screen.getByText('Create'))
@@ -397,7 +397,7 @@ describe('functional tests that should', () => {
         jest.runOnlyPendingTimers()
       })
       await waitFor(() => {
-        expect(screen.getByText('confirmed!')).toBeInTheDocument()
+        expect(screen.getByText('Confirmed!')).toBeInTheDocument()
       })
     })
   })
