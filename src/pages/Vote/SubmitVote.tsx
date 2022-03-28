@@ -50,7 +50,7 @@ const SubmitVote = ({ contractRef, contractTxId, title }: SubmitVoteProps) => {
   return (
     <div>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
-      {txResult?.txId && typedStatus && typedStatus.type == 'confirmed' && (
+      {txResult?.txId && typedStatus && typedStatus.type == 'Confirmed' && (
         <Container style={{ maxWidth: '400px', textAlign: 'center', lineHeight: '1.5' }}>
           <p>Thanks for voting!</p>
           <p>Reload the contract when the administrator has closed the vote to see the results.</p>

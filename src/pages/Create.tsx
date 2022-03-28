@@ -7,7 +7,7 @@ import { createContract, initialContractState } from '../util/voting'
 import { CONTRACTGAS } from '../util/client'
 import { useEffect } from 'react'
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
-import addressToGroup from 'alephium-js/dist/lib/address'
+import { addressToGroup } from 'alephium-js/dist/lib/address'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Address, emptyCache, TypedStatus } from '../util/types'
@@ -111,7 +111,7 @@ export const Create = () => {
   return (
     <div>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
-      {txResult?.txId && typedStatus && typedStatus.type == 'confirmed' && (
+      {txResult?.txId && typedStatus && typedStatus.type == 'Confirmed' && (
         <>
           <Container>
             <div style={{ flexDirection: 'row' }}>

@@ -76,14 +76,14 @@ const Administrate = () => {
   return (
     <div>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
-      {txResult?.txId && typedStatus && typedStatus.type === 'confirmed' && lastAction === Action.Allocate && (
+      {txResult?.txId && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (
         <Container>
           <div style={{ flexDirection: 'row' }}>
             Share this<NavLink to={`/vote/${contractTxId}`}> link </NavLink> to the voters.
           </div>
         </Container>
       )}
-      {(!txResult || (typedStatus && typedStatus.type === 'confirmed')) && (
+      {(!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (
         <Container>
           <h2>
             <label htmlFor="tx-id">Contract transaction ID</label>

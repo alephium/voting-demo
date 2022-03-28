@@ -3,7 +3,7 @@ import {
   ApiConfig,
   CompileResult,
   TxResult,
-  BuildContractResult,
+  BuildContractDeployScriptTxResult,
   HttpResponse,
   ServiceUnavailable,
   InternalServerError,
@@ -11,10 +11,11 @@ import {
   Unauthorized,
   BadRequest,
   Addresses,
-  BuildScriptResult,
+  BuildScriptTxResult,
   TxStatus,
   Confirmed,
-  ContractStateResult
+  ContractState,
+  Val
 } from 'alephium-js/dist/api/api-alephium'
 import { NetworkType } from './types'
 
@@ -93,25 +94,25 @@ class Client {
   buildContract = async (
     compileResult: CompileResult,
     gas: number = CONTRACTGAS,
-    state?: string,
+    state?: Val[],
     issueTokenAmount?: string
-  ): Promise<BuildContractResult> => {
+  ): Promise<BuildContractDeployScriptTxResult> => {
     return this.fetch(
-      this.api.contracts.postContractsBuildContract({
+      this.api.contracts.postContractsUnsignedTxBuildContract({
         fromPublicKey: await this.getPublicKey(),
-        code: compileResult.code,
+        bytecode: compileResult.bytecode,
         gas: gas,
-        state: state,
+        initialFields: state ?? [],
         issueTokenAmount: issueTokenAmount
       })
     )
   }
 
-  buildScript = async (compileResult: CompileResult, gas: number = CONTRACTGAS): Promise<BuildScriptResult> => {
+  buildScript = async (compileResult: CompileResult, gas: number = CONTRACTGAS): Promise<BuildScriptTxResult> => {
     return this.fetch(
-      this.api.contracts.postContractsBuildScript({
+      this.api.contracts.postContractsUnsignedTxBuildScript({
         fromPublicKey: await this.getPublicKey(),
-        code: compileResult.code,
+        bytecode: compileResult.bytecode,
         gas: gas
       })
     )
@@ -132,11 +133,11 @@ class Client {
     )
   }
 
-  async deployContract(contract: string, gas: number, state: string, issueTokenAmount: string): Promise<TxResult> {
+  async deployContract(contract: string, gas: number, state: Val[], issueTokenAmount: string): Promise<TxResult> {
     return this.compileContract(contract)
       .then((compileResult) => this.buildContract(compileResult, gas, state, issueTokenAmount))
-      .then(async (buildContract: BuildContractResult) => {
-        const signature = await this.sign(buildContract.hash)
+      .then(async (buildContract: BuildContractDeployScriptTxResult) => {
+        const signature = await this.sign(buildContract.txId)
         return this.submit(buildContract.unsignedTx, signature)
       })
   }
@@ -144,8 +145,8 @@ class Client {
   async deployScript(script: string): Promise<TxResult> {
     return this.compileScript(script)
       .then(this.buildScript)
-      .then(async (buildScriptResult: BuildScriptResult) => {
-        const signature = await this.sign(buildScriptResult.hash)
+      .then(async (buildScriptResult: BuildScriptTxResult) => {
+        const signature = await this.sign(buildScriptResult.txId)
         return this.submit(buildScriptResult.unsignedTx, signature)
       })
   }
@@ -167,9 +168,9 @@ class Client {
     if ('blockHash' in txStatus) {
       const confirmed = txStatus as Confirmed
       const block = await this.fetch(this.api.blockflow.getBlockflowBlocksBlockHash(confirmed.blockHash))
-      const tx = block.transactions.find((tx) => tx.id === txId)
+      const tx = block.transactions.find((tx) => tx.unsigned.txId === txId)
       if (tx) {
-        const contractOutput = tx.outputs.find((output) => !('locktime' in output))
+        const contractOutput = tx.generatedOutputs.find((output) => !('locktime' in output))
         if (contractOutput) {
           console.log(contractOutput, 'output')
           const contractAddress = contractOutput.address
@@ -194,20 +195,20 @@ class Client {
     }
   }
 
-  getContractState = async (txId: string): Promise<ContractStateResult> => {
+  getContractState = async (txId: string): Promise<ContractState> => {
     const contractRef = await this.getContractRef(txId)
     const group = await this.fetch(this.api.addresses.getAddressesAddressGroup(contractRef.contractAddress))
     return this.fetch(this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group }))
   }
 
   getNVoters = async (txId: string): Promise<number> => {
-    return this.getContractState(txId).then((result: ContractStateResult) => {
+    return this.getContractState(txId).then((result: ContractState) => {
       return result.fields.length - 6
     })
   }
 
   async getNetworkType(): Promise<NetworkType> {
-    return this.fetch(this.api.infos.getInfosSelfClique()).then((tResult) => {
+    return this.fetch(this.api.infos.getInfosChainParams()).then((tResult) => {
       if (tResult.networkId == 0) {
         return NetworkType.MAINNET
       } else if (tResult.networkId == 1) {

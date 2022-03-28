@@ -14,7 +14,7 @@ export function catchAndAlert(action: Promise<any>) {
 
 export function clearIntervalIfConfirmed(fetchedStatus: TxStatus, interval: NodeJS.Timeout): boolean {
   const status = fetchedStatus as TypedStatus
-  if (status.type == 'confirmed') {
+  if (status.type == 'Confirmed') {
     clearInterval(interval)
     return true
   }
