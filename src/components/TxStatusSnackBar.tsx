@@ -15,7 +15,7 @@ export const TxStatusSnackBar = ({ txStatus, txId }: TxStatusSnackBarProps) => {
   const getMessage = () => {
     if (!(txStatus && txId)) {
       return null
-    } else if (status.type === 'confirmed') {
+    } else if (status.type === 'Confirmed') {
       return (
         <StyledDiv>
           <Alert color={ALERT_PROPS.SUCCESS.color} backgroundColor={ALERT_PROPS.SUCCESS.backgroundColor}>
@@ -30,7 +30,7 @@ export const TxStatusSnackBar = ({ txStatus, txId }: TxStatusSnackBarProps) => {
           </Alert>
         </StyledDiv>
       )
-    } else if (status.type === 'mem-pooled') {
+    } else if (status.type === 'MemPooled') {
       return (
         <StyledDiv>
           <Alert color={ALERT_PROPS.WARNING.color} backgroundColor={ALERT_PROPS.WARNING.backgroundColor}>
