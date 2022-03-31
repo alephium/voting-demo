@@ -24,6 +24,8 @@ export const Create = () => {
   const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [contractAddress, setContractAddress] = useState('')
 
   function addressFromString(address: string): Address {
     const group = addressToGroup(address, totalNumberOfGroups)
@@ -91,7 +93,9 @@ export const Create = () => {
       } else if (admin == undefined) {
         return Promise.reject('Please Provide an administrator address')
       } else {
+        setIsLoading(true)
         const result = await context.apiClient.deployContract(
+          context.accounts[0],
           createContract(voters.length),
           CONTRACTGAS,
           initialContractState(
@@ -102,8 +106,10 @@ export const Create = () => {
           voters.length.toString()
         )
         if (result) {
+          setContractAddress(result.contractAddress)
           setResult(result)
         }
+        setIsLoading(false)
       }
     }
   }
@@ -118,6 +124,7 @@ export const Create = () => {
               Click <NavLink to={`/administrate/${txResult.txId}`}>here</NavLink> to allocate the tokens to the voters.
             </div>
           </Container>
+          <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'center' }}>{contractAddress}</div>
           <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'center' }}>
             <Button onClick={clear}>Create a new voting contract</Button>
           </div>
@@ -150,6 +157,7 @@ export const Create = () => {
           <VotersTable voters={voters} removeVoter={removeVoter} admin={admin} />
           <VoterInput addVoter={addVoter} />
           <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
+          {isLoading && <div>Waiting for wallet response...</div>}
         </Container>
       )}
     </div>

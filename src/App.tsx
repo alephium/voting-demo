@@ -1,12 +1,16 @@
-import React, { Reducer, useEffect, useReducer, useState } from 'react'
+import WalletConnectClient, { CLIENT_EVENTS } from '@walletconnect/client'
+import AlephiumProvider from '@walletconnect/alephium-provider'
+import { PairingTypes } from '@walletconnect/types'
+import QRCodeModal from '@walletconnect/qrcode-modal'
+
+import React, { Reducer, useCallback, useReducer, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
 import styled from 'styled-components'
 import { Switch, Route, NavLink } from 'react-router-dom'
 import Create from './pages/Create'
 import Vote from './pages/Vote/Vote'
 import Administrate from './pages/Administrate'
-import SettingsPage from './pages/SettingsPage'
-import { Button } from './components/Common'
+import UnlockPage from './pages/UnlockPage'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
 import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
@@ -20,6 +24,7 @@ export interface Context {
   setApiClient: (w: Client | undefined) => void
   cache: Cache
   editCache: React.Dispatch<Partial<Cache>>
+  accounts: string[]
 }
 
 const initialContext: Context = {
@@ -28,14 +33,19 @@ const initialContext: Context = {
   apiClient: undefined,
   setApiClient: () => null,
   cache: emptyCache(),
-  editCache: () => null
+  editCache: () => null,
+  accounts: []
 }
 
 export const GlobalContext = React.createContext<Context>(initialContext)
 export const Storage = getStorage()
 
+function noop() {
+  /* do nothing. */
+}
+
 const App = () => {
-  const [isModalOpened, setModal] = useState(false)
+  const [isUnlockOpen, setUnlockOpen] = useState(true)
   const [settings, setSettings] = useState<Settings>(loadSettingsOrDefault())
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
   const editCacheReducer: Reducer<Cache, Partial<Cache>> = (prevCache: Cache, edits: Partial<Cache>) => ({
@@ -44,44 +54,58 @@ const App = () => {
   })
   const [cache, editCache] = useReducer(editCacheReducer, emptyCache())
   const [networkType, setNetworkType] = useState<NetworkType | undefined>(undefined)
-  const handleCloseModal = () => {
-    setModal(false)
-  }
+  const [accounts, setAccounts] = useState<string[]>([])
 
-  const handleConnectWallet = () => {
-    setModal(true)
-  }
+  const handleUnlockWallet = useCallback(async () => {
+    const walletConnect = await WalletConnectClient.init({
+      // TODO: configurable
+      projectId: '6e2562e43678dd68a9070a62b6d52207',
+      relayUrl: 'wss://relay.walletconnect.com',
+      metadata: {
+        name: 'Voting demo',
+        description: 'A demonstration of voting on Alephium',
+        url: 'https://walletconnect.com/',
+        icons: ['https://walletconnect.com/walletconnect-logo.png']
+      }
+    })
 
-  const pollNetworkType = (client: Client) => {
-    client
-      .getNetworkType()
-      .then(setNetworkType)
-      .catch(() => setNetworkType(NetworkType.UNREACHABLE))
-  }
+    const provider = new AlephiumProvider({
+      // TODO: Configurable from UnlockPage
+      chains: ['localhost'],
+      client: walletConnect
+    })
 
-  useEffect(() => {
-    setApiClient(new Client(settings.nodeHost, settings.walletName, settings.password))
-    saveSettings(settings)
-  }, [settings])
+    walletConnect.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+      const { uri } = proposal.signal.params
 
-  useEffect(() => {
-    if (apiClient) {
-      const interval = setInterval(() => {
-        pollNetworkType(apiClient)
-      }, 15000)
-      pollNetworkType(apiClient)
-      return () => clearInterval(interval)
-    }
-  }, [apiClient])
+      // TODO: Must be replaced with our own modal, this one has wallets which are not applicable.
+      QRCodeModal.open(uri, noop)
+    })
 
-  const walletUnlock = () => {
-    if (apiClient) {
-      apiClient.walletUnlock().then(
-        () => alert('Wallet successfully unlocked'),
-        (reason) => alert(`An error occured during walletUnlock: ${reason}`)
-      )
-    }
-  }
+    walletConnect.on(CLIENT_EVENTS.session.deleted, noop)
+    walletConnect.on(CLIENT_EVENTS.session.sync, () => QRCodeModal.close())
+
+    provider.on('accountsChanged', (accounts: string[]) => {
+      QRCodeModal.close()
+      setAccounts(accounts)
+    })
+
+    await provider.connect()
+
+    const settingsWallet: any = await provider.request({
+      method: 'alephium_getServices',
+      params: {}
+    })
+
+    setSettings({
+      network: 'localhost',
+      nodeHost: settingsWallet.nodeHost,
+      explorerURL: settingsWallet.explorerUrl
+    })
+
+    setApiClient(new Client(settings.nodeHost, walletConnect, provider))
+    setUnlockOpen(false)
+  }, [])
 
   return (
     <GlobalContext.Provider
@@ -91,7 +115,8 @@ const App = () => {
         apiClient,
         setApiClient,
         cache: cache,
-        editCache
+        editCache,
+        accounts
       }}
     >
       <ContentContainer>
@@ -111,10 +136,7 @@ const App = () => {
               Administrate
             </NavBarItem>
           </NavBar>
-          <div>
-            <Button onClick={() => walletUnlock()}>Unlock Wallet</Button>
-            <Button onClick={handleConnectWallet}>Settings</Button>
-          </div>
+          <div>{accounts.length > 0 && <div>{accounts[0]}</div>}</div>
         </NavBarContainer>
         <Switch>
           <Route exact path="/">
@@ -133,7 +155,7 @@ const App = () => {
             <Administrate />
           </Route>
         </Switch>
-        <SettingsPage isModalOpen={isModalOpened} handleCloseModal={handleCloseModal} />
+        <UnlockPage isModalOpen={isUnlockOpen} onUnlock={handleUnlockWallet} />
       </ContentContainer>
     </GlobalContext.Provider>
   )
