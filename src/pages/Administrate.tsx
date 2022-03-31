@@ -5,6 +5,7 @@ import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
+import { CONTRACTGAS } from '../util/client'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Action, TypedStatus } from '../util/types'
@@ -55,7 +56,9 @@ const Administrate = () => {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
         const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(allocateTokenScript(contractRef, numberVoters)).then(setResult)
+        await context.apiClient
+          .deployScript(context.accounts[0], allocateTokenScript(contractRef, numberVoters), CONTRACTGAS)
+          .then(setResult)
         setLastAction(Action.Allocate)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
       }
@@ -66,7 +69,9 @@ const Administrate = () => {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
         const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(closeVotingScript(contractRef, numberVoters)).then(setResult)
+        await context.apiClient
+          .deployScript(context.accounts[0], closeVotingScript(contractRef, numberVoters), CONTRACTGAS)
+          .then(setResult)
         setLastAction(Action.Close)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
       }
