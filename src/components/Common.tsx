@@ -11,6 +11,11 @@ const Button = styled.div`
   box-shadow: -6px -6px 12px 0 rgb(255 255 255 / 60%), 6px 6px 12px 0 rgb(0 0 0 / 7%);
   text-align: center;
 
+  & > * {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.9);
+  }
+
   &:hover {
   }
 

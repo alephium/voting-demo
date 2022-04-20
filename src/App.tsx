@@ -110,7 +110,9 @@ const App = () => {
 
   const onDisconnect = useCallback(async () => {
     await apiClient?.provider.disconnect()
-  }, [])
+    setAccounts([])
+    setUnlockOpen(true)
+  }, [apiClient])
 
   const stylePressedIn = {
     boxShadow: '-6px -6px 12px 0 rgb(255 255 255 / 60%) inset, 6px 6px 12px 0 rgb(0 0 0 / 7%) inset'
@@ -139,11 +141,11 @@ const App = () => {
               <NavBarItem exact to="/" activeStyle={stylePressedIn}>
                 Create
               </NavBarItem>
-              <NavBarItem to="/vote" activeStyle={stylePressedIn}>
-                Vote
-              </NavBarItem>
               <NavBarItem to="/administrate" activeStyle={stylePressedIn}>
                 Administrate
+              </NavBarItem>
+              <NavBarItem to="/vote" activeStyle={stylePressedIn}>
+                Vote
               </NavBarItem>
               <RedButton onClick={onDisconnect}>⏻</RedButton>
             </NavBar>

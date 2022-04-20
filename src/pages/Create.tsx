@@ -135,15 +135,10 @@ export const Create = () => {
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type == 'Confirmed' && (
         <>
-          <Container>
-            <div style={{ flexDirection: 'row' }}>
-              Click <NavLink to={`/administrate/${txResult.txId}`}>here</NavLink> to allocate the tokens to the voters.
-            </div>
-          </Container>
-          <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'center' }}>{contractAddress}</div>
-          <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'center' }}>
-            <Button onClick={clear}>Create a new voting contract</Button>
-          </div>
+          <Button>
+            <NavLink to={`/administrate/${txResult.txId}`}>Allocate voting tokens</NavLink>
+          </Button>
+          <Button onClick={clear}>Create another poll</Button>
         </>
       )}
       {!txResult && (

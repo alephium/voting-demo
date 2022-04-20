@@ -20,6 +20,8 @@ const Page = ({ isModalOpen, onUnlock, uri }: Props) => {
   useEffect(() => {
     if (uri !== undefined) {
       setState('pairing')
+    } else {
+      setState('network select')
     }
   }, [uri])
 
