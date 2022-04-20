@@ -79,7 +79,7 @@ const Administrate = () => {
   }
 
   return (
-    <div>
+    <>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (
         <Container>
@@ -90,12 +90,9 @@ const Administrate = () => {
       )}
       {(!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (
         <Container>
-          <h2>
-            <label htmlFor="tx-id">Contract transaction ID</label>
-          </h2>
           <Input
             id="tx-id"
-            placeholder="Please enter the contract deployment transaction ID"
+            placeholder="The contract transaction ID"
             value={contractTxId}
             onChange={(e) => setContractTxId(e.target.value)}
           />
@@ -103,7 +100,7 @@ const Administrate = () => {
           <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>
       )}
-    </div>
+    </>
   )
 }
 

@@ -1,7 +1,6 @@
 import WalletConnectClient, { CLIENT_EVENTS } from '@walletconnect/client'
 import AlephiumProvider from '@walletconnect/alephium-provider'
 import { PairingTypes } from '@walletconnect/types'
-import QRCodeModal from '@walletconnect/qrcode-modal'
 
 import React, { Reducer, useCallback, useReducer, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
@@ -13,7 +12,7 @@ import Administrate from './pages/Administrate'
 import UnlockPage from './pages/UnlockPage'
 import { getStorage } from 'alephium-js'
 import Client from './util/client'
-import { loadSettingsOrDefault, saveSettings, Settings } from './util/settings'
+import { loadSettingsOrDefault, Settings } from './util/settings'
 import { emptyCache, Cache, NetworkType } from './util/types'
 import { NetworkBadge } from './components/NetworkBadge'
 
@@ -46,6 +45,7 @@ function noop() {
 
 const App = () => {
   const [isUnlockOpen, setUnlockOpen] = useState(true)
+  const [uri, setUri] = useState<string | undefined>(undefined)
   const [settings, setSettings] = useState<Settings>(loadSettingsOrDefault())
   const [apiClient, setApiClient] = useState<Client | undefined>(undefined)
   const editCacheReducer: Reducer<Cache, Partial<Cache>> = (prevCache: Cache, edits: Partial<Cache>) => ({
@@ -53,12 +53,12 @@ const App = () => {
     ...edits
   })
   const [cache, editCache] = useReducer(editCacheReducer, emptyCache())
-  const [networkType, setNetworkType] = useState<NetworkType | undefined>(undefined)
+  const [networkType] = useState<NetworkType | undefined>(undefined)
   const [accounts, setAccounts] = useState<string[]>([])
 
-  const handleUnlockWallet = useCallback(async () => {
+  const handleUnlockWallet = useCallback(async (network) => {
     const walletConnect = await WalletConnectClient.init({
-      // TODO: configurable
+      // TODO: configurable project Id
       projectId: '6e2562e43678dd68a9070a62b6d52207',
       relayUrl: 'wss://relay.walletconnect.com',
       metadata: {
@@ -70,23 +70,24 @@ const App = () => {
     })
 
     const provider = new AlephiumProvider({
-      // TODO: Configurable from UnlockPage
-      chains: ['localhost'],
+      chains: [network],
       client: walletConnect
     })
 
     walletConnect.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
       const { uri } = proposal.signal.params
-
-      // TODO: Must be replaced with our own modal, this one has wallets which are not applicable.
-      QRCodeModal.open(uri, noop)
+      setUri(uri)
     })
 
     walletConnect.on(CLIENT_EVENTS.session.deleted, noop)
-    walletConnect.on(CLIENT_EVENTS.session.sync, () => QRCodeModal.close())
+    walletConnect.on(CLIENT_EVENTS.session.sync, () => {
+      setUnlockOpen(false)
+      setUri(undefined)
+    })
 
     provider.on('accountsChanged', (accounts: string[]) => {
-      QRCodeModal.close()
+      setUnlockOpen(false)
+      setUri(undefined)
       setAccounts(accounts)
     })
 
@@ -98,7 +99,7 @@ const App = () => {
     })
 
     setSettings({
-      network: 'localhost',
+      network,
       nodeHost: settingsWallet.nodeHost,
       explorerURL: settingsWallet.explorerUrl
     })
@@ -106,6 +107,14 @@ const App = () => {
     setApiClient(new Client(settings.nodeHost, walletConnect, provider))
     setUnlockOpen(false)
   }, [])
+
+  const onDisconnect = useCallback(async () => {
+    await apiClient?.provider.disconnect()
+  }, [])
+
+  const stylePressedIn = {
+    boxShadow: '-6px -6px 12px 0 rgb(255 255 255 / 60%) inset, 6px 6px 12px 0 rgb(0 0 0 / 7%) inset'
+  }
 
   return (
     <GlobalContext.Provider
@@ -119,44 +128,47 @@ const App = () => {
         accounts
       }}
     >
-      <ContentContainer>
-        <NavBarContainer>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Logo src={logo}></Logo>
-            {networkType !== undefined && <NetworkBadge networkType={networkType} />}
-          </div>
-          <NavBar>
-            <NavBarItem exact to="/" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-              Create
-            </NavBarItem>
-            <NavBarItem to="/vote" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-              Vote
-            </NavBarItem>
-            <NavBarItem to="/administrate" activeStyle={{ backgroundColor: '#ebcdff', fontWeight: 'bold' }}>
-              Administrate
-            </NavBarItem>
-          </NavBar>
-          <div>{accounts.length > 0 && <div>{accounts[0]}</div>}</div>
-        </NavBarContainer>
-        <Switch>
-          <Route exact path="/">
-            <Create />
-          </Route>
-          <Route exact path="/vote/:txId">
-            <Vote />
-          </Route>
-          <Route path="/vote">
-            <Vote />
-          </Route>
-          <Route exact path="/administrate/:txId">
-            <Administrate />
-          </Route>
-          <Route path="/administrate">
-            <Administrate />
-          </Route>
-        </Switch>
-        <UnlockPage isModalOpen={isUnlockOpen} onUnlock={handleUnlockWallet} />
-      </ContentContainer>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', left: '1rem', top: '1rem' }}>
+          <Logo src={logo}></Logo>
+          {networkType !== undefined && <NetworkBadge networkType={networkType} />}
+        </div>
+        <ContentContainer>
+          <NavBarContainer>
+            <NavBar>
+              <NavBarItem exact to="/" activeStyle={stylePressedIn}>
+                Create
+              </NavBarItem>
+              <NavBarItem to="/vote" activeStyle={stylePressedIn}>
+                Vote
+              </NavBarItem>
+              <NavBarItem to="/administrate" activeStyle={stylePressedIn}>
+                Administrate
+              </NavBarItem>
+              <RedButton onClick={onDisconnect}>⏻</RedButton>
+            </NavBar>
+          </NavBarContainer>
+          <Address>{accounts[0]}</Address>
+          <Switch>
+            <Route exact path="/">
+              <Create />
+            </Route>
+            <Route exact path="/vote/:txId">
+              <Vote />
+            </Route>
+            <Route path="/vote">
+              <Vote />
+            </Route>
+            <Route exact path="/administrate/:txId">
+              <Administrate />
+            </Route>
+            <Route path="/administrate">
+              <Administrate />
+            </Route>
+          </Switch>
+          <UnlockPage isModalOpen={isUnlockOpen} onUnlock={handleUnlockWallet} uri={uri} />
+        </ContentContainer>
+      </div>
     </GlobalContext.Provider>
   )
 }
@@ -175,13 +187,17 @@ const ContentContainer = styled.div`
   justify-content: center;
   display: flex;
   font-family: Arial;
+  width: 39rem;
 `
 
 const NavBarContainer = styled.nav`
   justify-content: space-between;
   display: flex;
   flex-direction: row;
-  width: 90%;
+  width: auto;
+  align-items: center;
+  margin-top: 3.5rem;
+  margin-bottom: 0rem;
 `
 
 const NavBar = styled.nav`
@@ -189,28 +205,51 @@ const NavBar = styled.nav`
   align-items: center;
   justify-content: center;
   display: flex;
-  background-color: white;
-  border-radius: 16px;
-  padding: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  position: absolute;
+  color: rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  font-weight: 700;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 6px 6px 12px 0 rgb(255 255 255 / 80%), -6px -6px 19px 0 rgb(0 0 0 / 15%);
 `
 
 const NavBarItem = styled(NavLink)`
-  border-radius: 16px;
-  // background-color:#f1eded;
-  color: unset;
-  font-size: 20px;
-  color: #555454;
-  margin: 5px;
-  margin-left: 10px;
-  margin-right: 10px;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 4px;
-  padding-bottom: 4px;
   text-decoration: none;
+  color: rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  padding: 1.2rem 1.6rem;
+  font-weight: 700;
+  margin: 0.4rem;
+  border-radius: 12px;
+  box-shadow: -6px -6px 12px 0 rgb(255 255 255 / 60%), 6px 6px 12px 0 rgb(0 0 0 / 7%);
 `
 
+const RedButton = styled.div`
+  color: rgb(255 255 255 / 88%);
+  background-color: rgb(255 0 0);
+  line-height: 2.3rem;
+  width: 2.3rem;
+  text-align: center;
+  height: 2.3rem;
+  cursor: pointer;
+  font-weight: 700;
+  margin: 1rem;
+  border-radius: 12px;
+  box-shadow: -7px -7px 20px 0 rgb(0 0 0 / 36%) inset, 7px 7px 24px 0 rgb(255 104 76 / 87%) inset,
+    -2px -2px 24px 0 rgb(255 104 76 / 87%);
+
+  &:active {
+    box-shadow: 7px 7px 20px 0 rgb(0 0 0 / 36%) inset, -7px -7px 24px 0 rgb(255 104 76 / 87%) inset;
+  }
+`
+
+const Address = styled.div`
+  width: 10rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-weight: 600;
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+`
 export default App
