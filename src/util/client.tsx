@@ -4,7 +4,6 @@ import AlephiumProvider from '@walletconnect/alephium-provider'
 import {
   Api,
   ApiConfig,
-  CompileResult,
   TxResult,
   HttpResponse,
   ServiceUnavailable,
@@ -67,7 +66,7 @@ class Client {
     issueTokenAmount: string
   ): Promise<TxResult & { contractAddress: string }> {
     return this.provider.request({
-      method: 'alephium_signTx',
+      method: 'alephium_signAndSubmitTx',
       params: {
         fromAddress,
         contract,
@@ -80,7 +79,7 @@ class Client {
 
   async deployScript(fromAddress: string, script: string, gas: number): Promise<TxResult> {
     return this.provider.request({
-      method: 'alephium_signTx',
+      method: 'alephium_signAndSubmitTx',
       params: {
         fromAddress,
         script,

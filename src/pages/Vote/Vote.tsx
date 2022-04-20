@@ -47,12 +47,9 @@ const Vote = () => {
 
   let content = (
     <Container>
-      <h2>
-        <label htmlFor="txId"> Contract transaction ID</label>
-      </h2>
       <Input
         id="txId"
-        placeholder="Please enter the contract deployment transaction ID"
+        placeholder="The contract transaction ID"
         value={contractTxId}
         onChange={(e) => setContractTxId(e.target.value)}
       />
