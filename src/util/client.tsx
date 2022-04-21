@@ -1,5 +1,5 @@
 import WalletConnectClient from '@walletconnect/client'
-import AlephiumProvider from '@walletconnect/alephium-provider'
+import AlephiumProvider from '@alephium/walletconnect-provider'
 
 import {
   Api,

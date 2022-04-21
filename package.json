@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@alephium/walletconnect-provider": "^2.0.0-beta.26",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -10,7 +11,6 @@
     "@types/node": "^12.20.36",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
-    "@walletconnect/alephium-provider": "file:../walletconnect-monorepo/packages/alephium-provider",
     "@walletconnect/client": "^2.0.0-beta.26",
     "@walletconnect/qrcode-modal": "^1.7.7",
     "@walletconnect/types": "^2.0.0-beta.26",

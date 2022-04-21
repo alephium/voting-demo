@@ -1,5 +1,5 @@
 import WalletConnectClient, { CLIENT_EVENTS } from '@walletconnect/client'
-import AlephiumProvider from '@walletconnect/alephium-provider'
+import AlephiumProvider from '@alephium/walletconnect-provider'
 import { PairingTypes } from '@walletconnect/types'
 
 import React, { Reducer, useCallback, useReducer, useState } from 'react'
