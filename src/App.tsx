@@ -93,7 +93,11 @@ const App = () => {
 
     await provider.connect()
 
-    const settingsWallet: any = await provider.request({
+    const settingsWallet: {
+      nodeHost: string
+      explorerUrl: string
+      explorerApiUrl: string
+    } = await provider.request({
       method: 'alephium_getServices',
       params: {}
     })
