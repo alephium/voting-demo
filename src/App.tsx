@@ -104,7 +104,7 @@ const App = () => {
       explorerURL: settingsWallet.explorerUrl
     })
 
-    setApiClient(new Client(settings.nodeHost, walletConnect, provider))
+    setApiClient(new Client(settingsWallet.nodeHost, walletConnect, provider))
     setUnlockOpen(false)
   }, [])
 
