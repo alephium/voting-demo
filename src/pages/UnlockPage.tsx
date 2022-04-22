@@ -45,7 +45,7 @@ const Page = ({ isModalOpen, onUnlock, uri }: Props) => {
         {state == 'pairing' && (
           <>
             <QRCodeSVG value={uri || ''} size={256} includeMargin={true} />
-            <Input value={uri} />
+            <Input value={uri} readOnly />
           </>
         )}
       </Container>
