@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 
 interface Props {
   isModalOpen: boolean
-  onUnlock: (a: 'mainnet' | 'testnet' | 'localhost') => void
+  onUnlock: () => void
   uri?: string
 }
 
@@ -37,11 +37,8 @@ const Page = ({ isModalOpen, onUnlock, uri }: Props) => {
         <Header>This dApp requires an action</Header>
         {state == 'network select' && (
           <>
-            <Text>Select the network which your wallet is using</Text>
             <MultiList>
-              <MultiItem onClick={() => onUnlock('mainnet')}>Mainnet</MultiItem>
-              <MultiItem onClick={() => onUnlock('testnet')}>Testnet</MultiItem>
-              <MultiItem onClick={() => onUnlock('localhost')}>Localhost</MultiItem>
+              <MultiItem onClick={() => onUnlock()}>Connect wallet</MultiItem>
             </MultiList>
           </>
         )}
@@ -74,16 +71,6 @@ const Header = styled.h1`
   font-weight: 900;
   margin-bottom: 2rem;
 `
-
-const Text = styled.p`
-  color: rgba(255, 255, 255, 0.67);
-  font-weight: 700;
-  padding: 1.5rem 2rem;
-  margin: 1rem;
-  border-radius: 12px;
-  box-shadow: -6px -6px 12px 0 rgba(255, 255, 255, 0.1), 6px 6px 12px 0 rgba(0, 0, 0, 0.1);
-`
-
 const Input = styled.input`
   color: rgba(255, 255, 255, 0.67);
   font-weight: 700;

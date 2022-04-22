@@ -56,7 +56,7 @@ const App = () => {
   const [networkType] = useState<NetworkType | undefined>(undefined)
   const [accounts, setAccounts] = useState<string[]>([])
 
-  const handleUnlockWallet = useCallback(async (network) => {
+  const handleUnlockWallet = useCallback(async () => {
     const walletConnect = await WalletConnectClient.init({
       // TODO: configurable project Id
       projectId: '6e2562e43678dd68a9070a62b6d52207',
@@ -70,7 +70,7 @@ const App = () => {
     })
 
     const provider = new AlephiumProvider({
-      chains: [network],
+      chains: ['mainnet', 'testnet', 'devnet'],
       client: walletConnect
     })
 
@@ -99,7 +99,7 @@ const App = () => {
     })
 
     setSettings({
-      network,
+      network: '',
       nodeHost: settingsWallet.nodeHost,
       explorerURL: settingsWallet.explorerUrl
     })

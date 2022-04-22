@@ -41,7 +41,6 @@ export const Create = () => {
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [contractAddress, setContractAddress] = useState('')
 
   function addressFromString(address: string): Address {
     const group = addressToGroup(address, totalNumberOfGroups)
@@ -122,7 +121,6 @@ export const Create = () => {
           voters.length.toString()
         )
         if (result) {
-          setContractAddress(result.contractAddress)
           setResult(result)
         }
         setIsLoading(false)
