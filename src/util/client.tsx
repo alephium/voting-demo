@@ -24,7 +24,7 @@ export interface ContractRef {
   tokenId: string
 }
 
-export const CONTRACTGAS = 80000
+export const CONTRACTGAS = 6000000
 
 class Client {
   api: Api<unknown>
