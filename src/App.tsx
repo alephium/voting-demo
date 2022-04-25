@@ -70,7 +70,7 @@ const App = () => {
     })
 
     const provider = new AlephiumProvider({
-      chains: ['mainnet', 'testnet', 'devnet'],
+      chains: ['mainnet', 'testnet', 'custom', 'localhost'],
       client: walletConnect
     })
 
