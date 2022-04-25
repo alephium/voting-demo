@@ -1,22 +1,22 @@
+import WalletConnectClient from '@walletconnect/client'
+import AlephiumProvider from '@alephium/walletconnect-provider'
+
 import {
   Api,
   ApiConfig,
-  CompileResult,
   TxResult,
-  BuildContractDeployScriptTxResult,
   HttpResponse,
   ServiceUnavailable,
   InternalServerError,
   NotFound,
   Unauthorized,
   BadRequest,
-  Addresses,
-  BuildScriptTxResult,
   TxStatus,
   Confirmed,
   ContractState,
   Val
 } from 'alephium-js/dist/api/api-alephium'
+import { loadSettingsOrDefault, Settings } from './settings'
 import { NetworkType } from './types'
 
 export interface ContractRef {
@@ -24,61 +24,28 @@ export interface ContractRef {
   tokenId: string
 }
 
-export const CONTRACTGAS = 80000
+export const CONTRACTGAS = 6000000
 
 class Client {
   api: Api<unknown>
-  walletName: string
-  password: string
+  walletConnect: WalletConnectClient
+  provider: AlephiumProvider
+  accounts: string[]
+  settings: Settings
 
-  constructor(baseUrl: string, walletName: string, password: string) {
+  constructor(baseUrl: string, walletConnect: WalletConnectClient, provider: AlephiumProvider) {
     const apiConfig: ApiConfig = {
       baseUrl: baseUrl
     }
     this.api = new Api(apiConfig)
-    this.walletName = walletName
-    this.password = password
-  }
-
-  resetClient(walletName: string, password: string): void {
-    this.walletName = walletName
-    this.password = password
-  }
-
-  async walletUnlock() {
-    return this.fetch(
-      this.api.wallets.postWalletsWalletNameUnlock(this.walletName, {
-        password: this.password
-      })
-    )
-  }
-
-  async getPublicKey(): Promise<string> {
-    const addresses: Addresses = await this.fetch(this.api.wallets.getWalletsWalletNameAddresses(this.walletName))
-    const addressInfo = await this.fetch(
-      this.api.wallets.getWalletsWalletNameAddressesAddress(this.walletName, addresses.activeAddress)
-    )
-    return addressInfo.publicKey
+    this.accounts = []
+    this.walletConnect = walletConnect
+    this.provider = provider
+    this.settings = loadSettingsOrDefault()
   }
 
   async getActiveAddress(): Promise<string> {
-    return (await this.fetch(this.api.wallets.getWalletsWalletNameAddresses(this.walletName))).activeAddress
-  }
-
-  async compileContract(code: string): Promise<CompileResult> {
-    return this.fetch(
-      this.api.contracts.postContractsCompileContract({
-        code: code
-      })
-    )
-  }
-
-  async compileScript(code: string): Promise<CompileResult> {
-    return this.fetch(
-      this.api.contracts.postContractsCompileScript({
-        code: code
-      })
-    )
+    return this.accounts[0] || Promise.reject('No active address')
   }
 
   fetch = async <T, E extends BadRequest | Unauthorized | NotFound | InternalServerError | ServiceUnavailable>(
@@ -91,64 +58,34 @@ class Client {
     return result.data
   }
 
-  buildContract = async (
-    compileResult: CompileResult,
-    gas: number = CONTRACTGAS,
-    state?: Val[],
-    issueTokenAmount?: string
-  ): Promise<BuildContractDeployScriptTxResult> => {
-    return this.fetch(
-      this.api.contracts.postContractsUnsignedTxBuildContract({
-        fromPublicKey: await this.getPublicKey(),
-        bytecode: compileResult.bytecode,
-        gas: gas,
-        initialFields: state ?? [],
-        issueTokenAmount: issueTokenAmount
-      })
-    )
-  }
-
-  buildScript = async (compileResult: CompileResult, gas: number = CONTRACTGAS): Promise<BuildScriptTxResult> => {
-    return this.fetch(
-      this.api.contracts.postContractsUnsignedTxBuildScript({
-        fromPublicKey: await this.getPublicKey(),
-        bytecode: compileResult.bytecode,
-        gas: gas
-      })
-    )
-  }
-
-  async sign(data: string): Promise<string> {
-    return this.fetch(this.api.wallets.postWalletsWalletNameSign(this.walletName, { data: data })).then((result) => {
-      return result.signature
+  async deployContract(
+    fromAddress: string,
+    contract: string,
+    gas: number,
+    state: Val[],
+    issueTokenAmount: string
+  ): Promise<TxResult & { contractAddress: string }> {
+    return this.provider.request({
+      method: 'alephium_signAndSubmitTx',
+      params: {
+        fromAddress,
+        contract,
+        gas,
+        state,
+        issueTokenAmount
+      }
     })
   }
 
-  async submit(unsignedTx: string, signature: string): Promise<TxResult> {
-    return this.fetch(
-      this.api.transactions.postTransactionsSubmit({
-        unsignedTx: unsignedTx,
-        signature: signature
-      })
-    )
-  }
-
-  async deployContract(contract: string, gas: number, state: Val[], issueTokenAmount: string): Promise<TxResult> {
-    return this.compileContract(contract)
-      .then((compileResult) => this.buildContract(compileResult, gas, state, issueTokenAmount))
-      .then(async (buildContract: BuildContractDeployScriptTxResult) => {
-        const signature = await this.sign(buildContract.txId)
-        return this.submit(buildContract.unsignedTx, signature)
-      })
-  }
-
-  async deployScript(script: string): Promise<TxResult> {
-    return this.compileScript(script)
-      .then(this.buildScript)
-      .then(async (buildScriptResult: BuildScriptTxResult) => {
-        const signature = await this.sign(buildScriptResult.txId)
-        return this.submit(buildScriptResult.unsignedTx, signature)
-      })
+  async deployScript(fromAddress: string, script: string, gas: number): Promise<TxResult> {
+    return this.provider.request({
+      method: 'alephium_signAndSubmitTx',
+      params: {
+        fromAddress,
+        script,
+        gas
+      }
+    })
   }
 
   async getTxStatus(txId: string): Promise<TxStatus> {

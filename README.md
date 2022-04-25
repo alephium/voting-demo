@@ -2,6 +2,8 @@
 
 This project is a simple voting dApp built on the Alephium blockchain.
 
+You can visit a hosted version here: https://testnet-voting-demo.alephium.org/
+
 It implements a very simple token-based voting protocol where each voter receives a single token that he can spend to vote `yes` or `no` to a proposal. Once the voting period is over, the administrator closes the voting and votes will no longer be accepted.
 
 > *Disclaimer: The code and protocol provided in this project are intended to be run on the **testnet** and are for educational purposes only. We are not responsible for any loss of **ALPH** tokens by running it on the mainnet.*
@@ -30,7 +32,7 @@ $ npm run start
 ```
 Open [http://localhost:3000](http://localhost:3000) to view the following app  in the browser
 
-<img title="demo" src="./assets/full-app.JPG" alt="Full application screenshot" >
+<img title="demo" src="./assets/full-app.png" alt="Full application screenshot" >
 
 ## Usage
 

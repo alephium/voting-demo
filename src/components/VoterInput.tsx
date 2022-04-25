@@ -25,14 +25,16 @@ export const VoterInput = ({ addVoter }: VoterInputProps) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       <Input
         id="voterInput"
-        placeholder="Please enter the voter address"
+        placeholder="Please enter a voter address"
         onChange={(e) => handleOnChange(e)}
         value={voter}
       />
-      <Button onClick={() => handleOnClick()}>+</Button>
+      <Button onClick={() => handleOnClick()} style={{ marginLeft: '1rem' }}>
+        +
+      </Button>
     </div>
   )
 }

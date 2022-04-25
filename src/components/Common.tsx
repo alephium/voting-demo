@@ -1,33 +1,41 @@
 import styled from 'styled-components'
 
-const Button = styled.button`
-  background-color: white;
-  border-radius: 5px;
-  border-style: solid;
-  border-color: #e7e7e7;
-  padding-top: 0px;
-  margin-top: 15px;
-  height: 30px;
+const Button = styled.div`
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  padding: 1.2rem 1.6rem;
+  font-weight: 700;
+  margin: 1rem 0rem;
+  border-radius: 12px;
+  box-shadow: -6px -6px 12px 0 rgb(255 255 255 / 60%), 6px 6px 12px 0 rgb(0 0 0 / 7%);
+  text-align: center;
+
+  & > * {
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.9);
+  }
+
   &:hover {
-    border-color: #7e7d7d;
   }
 
   &:active {
-    background-color: #d6d6d6;
+    box-shadow: -6px -6px 12px 0 rgb(255 255 255 / 60%) inset, 6px 6px 12px 0 rgb(0 0 0 / 7%) inset;
   }
 `
 
 const Container = styled.div`
-  align-items: center;
-  background-color: white;
-  border-radius: 20px;
   display: flex;
-  box-shadow: 0px 2px 5px 1px #c4c2c2;
   flex-direction: column;
-  justify-content: center;
-  margin-top: 50px;
-  min-width: 20%;
-  padding: 20px;
+  width: calc(100% - 3.2rem);
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  padding: 1.2rem 1.6rem;
+  font-weight: 700;
+  margin: 2rem;
+  border-radius: 12px;
+  box-shadow: -6px -6px 12px 0 rgb(255 255 255 / 60%), 6px 6px 12px 0 rgb(0 0 0 / 7%);
 `
 
 export { Button, Container }

@@ -9,7 +9,7 @@ interface VotersTableProps {
 }
 export const VotersTable = ({ voters, removeVoter, admin }: VotersTableProps) => {
   return voters.length > 0 ? (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
       <table>
         <thead>
           <tr>

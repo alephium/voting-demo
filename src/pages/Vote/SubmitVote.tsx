@@ -3,7 +3,7 @@ import { useContext, useState, useEffect } from 'react'
 import { GlobalContext } from '../../App'
 import { Container, Button } from '../../components/Common'
 import TxStatusSnackBar from '../../components/TxStatusSnackBar'
-import { ContractRef } from '../../util/client'
+import { ContractRef, CONTRACTGAS } from '../../util/client'
 import { TypedStatus } from '../../util/types'
 import { clearIntervalIfConfirmed, catchAndAlert } from '../../util/util'
 import { createVotingScript } from '../../util/voting'
@@ -44,7 +44,7 @@ const SubmitVote = ({ contractRef, contractTxId, title }: SubmitVoteProps) => {
     if (contractRef && context.apiClient && contractTxId) {
       const nVoters = await context.apiClient.getNVoters(contractTxId)
       const txScript = createVotingScript(choice, contractRef, nVoters)
-      catchAndAlert(context.apiClient.deployScript(txScript).then(setResult))
+      catchAndAlert(context.apiClient.deployScript(context.accounts[0], txScript, CONTRACTGAS).then(setResult))
     }
   }
   return (

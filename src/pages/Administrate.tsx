@@ -5,6 +5,7 @@ import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
+import { CONTRACTGAS } from '../util/client'
 import { allocateTokenScript, closeVotingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Action, TypedStatus } from '../util/types'
@@ -55,7 +56,9 @@ const Administrate = () => {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
         const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(allocateTokenScript(contractRef, numberVoters)).then(setResult)
+        await context.apiClient
+          .deployScript(context.accounts[0], allocateTokenScript(contractRef, numberVoters), CONTRACTGAS)
+          .then(setResult)
         setLastAction(Action.Allocate)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
       }
@@ -66,7 +69,9 @@ const Administrate = () => {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
         const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(closeVotingScript(contractRef, numberVoters)).then(setResult)
+        await context.apiClient
+          .deployScript(context.accounts[0], closeVotingScript(contractRef, numberVoters), CONTRACTGAS)
+          .then(setResult)
         setLastAction(Action.Close)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
       }
@@ -74,7 +79,7 @@ const Administrate = () => {
   }
 
   return (
-    <div>
+    <>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (
         <Container>
@@ -85,12 +90,9 @@ const Administrate = () => {
       )}
       {(!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (
         <Container>
-          <h2>
-            <label htmlFor="tx-id">Contract transaction ID</label>
-          </h2>
           <Input
             id="tx-id"
-            placeholder="Please enter the contract deployment transaction ID"
+            placeholder="The contract transaction ID"
             value={contractTxId}
             onChange={(e) => setContractTxId(e.target.value)}
           />
@@ -98,7 +100,7 @@ const Administrate = () => {
           <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>
       )}
-    </div>
+    </>
   )
 }
 
