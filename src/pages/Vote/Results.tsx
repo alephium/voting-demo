@@ -1,5 +1,5 @@
-import { ValByteVec, ValU256 } from 'alephium-js/dist/api/api-alephium'
-import { useContext, useState } from 'react'
+import { ValByteVec, ValU256 } from 'alephium-web3/dist/api/api-alephium'
+import React, { useContext, useState } from 'react'
 import { GlobalContext } from '../../App'
 import { Container } from '../../components/Common'
 import { hexStringToStr } from '../../util/util'

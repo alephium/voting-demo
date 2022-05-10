@@ -1,14 +1,14 @@
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
-import { CONTRACTGAS } from '../util/client'
-import { allocateTokenScript, closeVotingScript } from '../util/voting'
+import { tokenAllocationScript, closingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Action, TypedStatus } from '../util/types'
+import { SignScriptTxResult } from 'alephium-web3'
 
 type Params = {
   txId?: string
@@ -25,12 +25,12 @@ const Administrate = () => {
     return initTxId
   }
   const [contractTxId, setContractTxId] = useState<string>(getInitTxId())
-  const [txResult, setResult] = useState<TxResult | undefined>(context.cache.administrateTxResult)
+  const [txResult, setResult] = useState<SignScriptTxResult | undefined>(context.cache.administrateTxResult)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [lastAction, setLastAction] = useState<Action | undefined>(context.cache.administrateAction)
 
-  const pollTxStatus = (interval: NodeJS.Timeout, txResult: TxResult) => {
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignScriptTxResult) => {
     context.apiClient?.getTxStatus(txResult.txId).then((fetchedStatus) => {
       setTxStatus(fetchedStatus)
       const status = fetchedStatus as TypedStatus
@@ -48,17 +48,18 @@ const Administrate = () => {
       pollTxStatus(interval, txResult)
       return () => clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const allocateTokens = async () => {
     if (context.apiClient) {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient
-          .deployScript(context.accounts[0], allocateTokenScript(contractRef, numberVoters), CONTRACTGAS)
-          .then(setResult)
+        const params = await tokenAllocationScript.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          templateVariables: { contractId: contractRef.tokenId }
+        })
+        const result = await context.apiClient.provider.signScriptTx(params)
+        setResult(result)
         setLastAction(Action.Allocate)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
       }
@@ -68,10 +69,12 @@ const Administrate = () => {
     if (context.apiClient) {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient
-          .deployScript(context.accounts[0], closeVotingScript(contractRef, numberVoters), CONTRACTGAS)
-          .then(setResult)
+        const params = await closingScript.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          templateVariables: { contractId: contractRef.tokenId }
+        })
+        const result = await context.apiClient.provider.signScriptTx(params)
+        setResult(result)
         setLastAction(Action.Close)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
       }

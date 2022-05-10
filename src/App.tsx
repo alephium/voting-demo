@@ -1,6 +1,7 @@
 import WalletConnectClient, { CLIENT_EVENTS } from '@walletconnect/client'
-import AlephiumProvider from '@alephium/walletconnect-provider'
+import WalletConnectProvider from 'alephium-walletconnect-provider'
 import { PairingTypes } from '@walletconnect/types'
+import { Account } from 'alephium-web3'
 
 import React, { Reducer, useCallback, useReducer, useState } from 'react'
 import logo from './images/alephium-logo-gradient-stroke.svg'
@@ -16,6 +17,11 @@ import { loadSettingsOrDefault, Settings } from './util/settings'
 import { emptyCache, Cache, NetworkType } from './util/types'
 import { NetworkBadge } from './components/NetworkBadge'
 
+const NETWORK = 'Custom'
+const NETWORK_ID = 4
+const NODE_HOST = 'http://127.0.0.1:22973/'
+const EXPLORER_HOST = 'http://127.0.0.1:3000/'
+
 export interface Context {
   settings: Settings
   setSettings: (s: Settings) => void
@@ -23,7 +29,7 @@ export interface Context {
   setApiClient: (w: Client | undefined) => void
   cache: Cache
   editCache: React.Dispatch<Partial<Cache>>
-  accounts: string[]
+  accounts: Account[]
 }
 
 const initialContext: Context = {
@@ -54,7 +60,7 @@ const App = () => {
   })
   const [cache, editCache] = useReducer(editCacheReducer, emptyCache())
   const [networkType] = useState<NetworkType | undefined>(undefined)
-  const [accounts, setAccounts] = useState<string[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
 
   const handleUnlockWallet = useCallback(async () => {
     const walletConnect = await WalletConnectClient.init({
@@ -69,8 +75,9 @@ const App = () => {
       }
     })
 
-    const provider = new AlephiumProvider({
-      chains: ['mainnet', 'testnet', 'custom', 'localhost'],
+    const provider = new WalletConnectProvider({
+      networkId: NETWORK_ID,
+      chainGroup: -1, // -1 means all groups are acceptable
       client: walletConnect
     })
 
@@ -85,30 +92,22 @@ const App = () => {
       setUri(undefined)
     })
 
-    provider.on('accountsChanged', (accounts: string[]) => {
+    provider.on('accountsChanged', (accounts: Account[]) => {
       setUnlockOpen(false)
       setUri(undefined)
+      console.log(`========= ${JSON.stringify(accounts)}`)
       setAccounts(accounts)
     })
 
     await provider.connect()
 
-    const settingsWallet: {
-      nodeHost: string
-      explorerUrl: string
-      explorerApiUrl: string
-    } = await provider.request({
-      method: 'alephium_getServices',
-      params: {}
-    })
-
     setSettings({
-      network: '',
-      nodeHost: settingsWallet.nodeHost,
-      explorerURL: settingsWallet.explorerUrl
+      network: NETWORK,
+      nodeHost: NODE_HOST,
+      explorerURL: EXPLORER_HOST
     })
 
-    setApiClient(new Client(settingsWallet.nodeHost, walletConnect, provider))
+    setApiClient(new Client(NODE_HOST, walletConnect, provider))
     setUnlockOpen(false)
   }, [])
 
@@ -154,7 +153,7 @@ const App = () => {
               <RedButton onClick={onDisconnect}>⏻</RedButton>
             </NavBar>
           </NavBarContainer>
-          <Address>{accounts[0]}</Address>
+          <Address>{accounts[0] ? accounts[0].address : 'Unknown address'}</Address>
           <Switch>
             <Route exact path="/">
               <Create />

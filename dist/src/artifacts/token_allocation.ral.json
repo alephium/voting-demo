@@ -1,0 +1,15 @@
+{
+    "sourceCodeSha256": "1aa866be4781a9472efda63ab078b786b8f5cee320dfdd0addae19b0e9b2a5c2",
+    "compiled": {
+        "type": "TemplateScriptByteCode",
+        "templateByteCode": "0101010002000c{contractId:ByteVec}17000c591701160113c22d79883d20000e2ca216000100"
+    },
+    "functions": [
+        {
+            "name": "main",
+            "signature": "pub payable main()->()",
+            "argTypes": [],
+            "returnTypes": []
+        }
+    ]
+}

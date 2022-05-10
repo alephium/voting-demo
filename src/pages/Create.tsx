@@ -1,14 +1,14 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Container, Button } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { useContext } from 'react'
 import styled from 'styled-components'
 import { GlobalContext } from '../App'
-import { createContract, initialContractState } from '../util/voting'
-import { CONTRACTGAS } from '../util/client'
+import { SignContractCreationTxResult, SignResult, stringToHex } from 'alephium-web3'
+import { votingContract } from '../util/voting'
 import { useEffect } from 'react'
-import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
-import { addressToGroup } from 'alephium-js/dist/lib/address'
+import { node } from 'alephium-web3'
+import { addressToGroup } from 'alephium-web3'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Address, emptyCache, TypedStatus } from '../util/types'
@@ -36,8 +36,8 @@ export const Create = () => {
   const context = useContext(GlobalContext)
   const [voters, setVoters] = useState<Address[]>([])
   const [admin, setAdmin] = useState<Address | undefined>(undefined)
-  const [txResult, setResult] = useState<TxResult | undefined>(context.cache.createTxResult)
-  const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
+  const [txResult, setResult] = useState<SignContractCreationTxResult | undefined>(context.cache.createTxResult)
+  const [txStatus, setStatus] = useState<node.TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -66,7 +66,7 @@ export const Create = () => {
     setVoters(newVoters)
   }
 
-  const pollTxStatus = (interval: NodeJS.Timeout, txResult: TxResult) => {
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignResult) => {
     context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
       setStatus(fetchedStatus)
       const status = fetchedStatus as TypedStatus
@@ -88,7 +88,6 @@ export const Create = () => {
       pollTxStatus(interval, txResult)
       return () => clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const clear = () => {
@@ -109,20 +108,19 @@ export const Create = () => {
         return Promise.reject('Please Provide an administrator address')
       } else {
         setIsLoading(true)
-        const result = await context.apiClient.deployContract(
-          context.accounts[0],
-          createContract(voters.length),
-          CONTRACTGAS,
-          initialContractState(
-            title,
-            admin?.address,
-            voters.map((voter) => voter.address)
-          ),
-          voters.length.toString()
-        )
+        console.log(`======== params0 ${JSON.stringify(context.accounts)}`)
+        console.log(`======== ${JSON.stringify(votingContract)}`)
+        const params = await votingContract.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          initialFields: [stringToHex(title), 0, 0, false, false, admin?.address, voters.map((voter) => voter.address)],
+          issueTokenAmount: voters.length
+        })
+        console.log(`======== params1, ${JSON.stringify(params)}`)
+        const result = await context.apiClient.provider.signContractCreationTx(params)
         if (result) {
           setResult(result)
         }
+        console.log(`======= ${JSON.stringify(result)}`)
         setIsLoading(false)
       }
     }

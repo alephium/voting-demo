@@ -1,0 +1,8 @@
+import "voting.ral"
+
+TxScript ClosingScript<contractId: ByteVec> {
+    pub payable fn main() -> () {
+        let voting = Voting(contractId)
+        voting.close()
+    }
+}

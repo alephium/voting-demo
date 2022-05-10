@@ -1,21 +1,30 @@
 import WalletConnectClient from '@walletconnect/client'
-import AlephiumProvider from '@alephium/walletconnect-provider'
 
+// import {
+//   Api,
+//   ApiConfig,
+//   TxResult,
+//   HttpResponse,
+//   ServiceUnavailable,
+//   InternalServerError,
+//   NotFound,
+//   Unauthorized,
+//   BadRequest,
+//   TxStatus,
+//   Confirmed,
+//   ContractState
+// } from 'alephium-web3/dist/api/api-alephium'
+import { convertHttpResponse, node } from 'alephium-web3'
+import WalletConnectProvider from 'alephium-walletconnect-provider'
 import {
-  Api,
-  ApiConfig,
-  TxResult,
-  HttpResponse,
-  ServiceUnavailable,
-  InternalServerError,
-  NotFound,
-  Unauthorized,
-  BadRequest,
-  TxStatus,
-  Confirmed,
-  ContractState,
-  Val
-} from 'alephium-js/dist/api/api-alephium'
+  SignContractCreationTxParams,
+  SignContractCreationTxResult,
+  SignScriptTxParams,
+  SignScriptTxResult,
+  Val,
+  Contract,
+  Number256
+} from 'alephium-web3'
 import { loadSettingsOrDefault, Settings } from './settings'
 import { NetworkType } from './types'
 
@@ -27,17 +36,17 @@ export interface ContractRef {
 export const CONTRACTGAS = 6000000
 
 class Client {
-  api: Api<unknown>
+  api: node.Api<unknown>
   walletConnect: WalletConnectClient
-  provider: AlephiumProvider
+  provider: WalletConnectProvider
   accounts: string[]
   settings: Settings
 
-  constructor(baseUrl: string, walletConnect: WalletConnectClient, provider: AlephiumProvider) {
-    const apiConfig: ApiConfig = {
+  constructor(baseUrl: string, walletConnect: WalletConnectClient, provider: WalletConnectProvider) {
+    const apiConfig: node.ApiConfig = {
       baseUrl: baseUrl
     }
-    this.api = new Api(apiConfig)
+    this.api = new node.Api(apiConfig)
     this.accounts = []
     this.walletConnect = walletConnect
     this.provider = provider
@@ -48,63 +57,56 @@ class Client {
     return this.accounts[0] || Promise.reject('No active address')
   }
 
-  fetch = async <T, E extends BadRequest | Unauthorized | NotFound | InternalServerError | ServiceUnavailable>(
-    query: Promise<HttpResponse<T, E>>
-  ): Promise<T> => {
-    const result = await query
-    if (result.error) {
-      return Promise.reject(new Error(result.error.detail))
-    }
-    return result.data
-  }
+  // fetch = async <T, E extends BadRequest | Unauthorized | NotFound | InternalServerError | ServiceUnavailable>(
+  //   query: Promise<HttpResponse<T, E>>
+  // ): Promise<T> => {
+  //   const result = await query
+  //   if (result.error) {
+  //     return Promise.reject(new Error(result.error.detail))
+  //   }
+  //   return result.data
+  // }
 
   async deployContract(
     fromAddress: string,
-    contract: string,
-    gas: number,
+    contract: Contract,
     state: Val[],
-    issueTokenAmount: string
-  ): Promise<TxResult & { contractAddress: string }> {
-    return this.provider.request({
-      method: 'alephium_signAndSubmitTx',
-      params: {
-        fromAddress,
-        contract,
-        gas,
-        state,
-        issueTokenAmount
-      }
+    issueTokenAmount: Number256
+  ): Promise<SignContractCreationTxResult> {
+    const params = await contract.paramsForDeployment({
+      signerAddress: fromAddress,
+      initialFields: state,
+      issueTokenAmount: issueTokenAmount
     })
+    return this.provider.signContractCreationTx(params)
   }
 
-  async deployScript(fromAddress: string, script: string, gas: number): Promise<TxResult> {
-    return this.provider.request({
-      method: 'alephium_signAndSubmitTx',
-      params: {
-        fromAddress,
-        script,
-        gas
-      }
-    })
+  async deployScript(fromAddress: string, bytecode: string): Promise<SignScriptTxResult> {
+    const params: SignScriptTxParams = {
+      signerAddress: fromAddress,
+      bytecode: bytecode,
+      submitTx: true
+    }
+    return this.provider.signScriptTx(params)
   }
 
-  async getTxStatus(txId: string): Promise<TxStatus> {
-    return await this.fetch(
-      this.api.transactions.getTransactionsStatus({
+  async getTxStatus(txId: string): Promise<node.TxStatus> {
+    return await convertHttpResponse(
+      await this.api.transactions.getTransactionsStatus({
         txId: txId
       })
     )
   }
 
   getContractRef = async (txId: string): Promise<ContractRef> => {
-    const txStatus = await this.fetch(
-      this.api.transactions.getTransactionsStatus({
+    const txStatus = await convertHttpResponse(
+      await this.api.transactions.getTransactionsStatus({
         txId: txId
       })
     )
     if ('blockHash' in txStatus) {
-      const confirmed = txStatus as Confirmed
-      const block = await this.fetch(this.api.blockflow.getBlockflowBlocksBlockHash(confirmed.blockHash))
+      const confirmed = txStatus as node.Confirmed
+      const block = convertHttpResponse(await this.api.blockflow.getBlockflowBlocksBlockHash(confirmed.blockHash))
       const tx = block.transactions.find((tx) => tx.unsigned.txId === txId)
       if (tx) {
         const contractOutput = tx.generatedOutputs.find((output) => !('locktime' in output))
@@ -132,28 +134,29 @@ class Client {
     }
   }
 
-  getContractState = async (txId: string): Promise<ContractState> => {
+  getContractState = async (txId: string): Promise<node.ContractState> => {
     const contractRef = await this.getContractRef(txId)
-    const group = await this.fetch(this.api.addresses.getAddressesAddressGroup(contractRef.contractAddress))
-    return this.fetch(this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group }))
+    const group = convertHttpResponse(await this.api.addresses.getAddressesAddressGroup(contractRef.contractAddress))
+    return convertHttpResponse(
+      await this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group })
+    )
   }
 
   getNVoters = async (txId: string): Promise<number> => {
-    return this.getContractState(txId).then((result: ContractState) => {
+    return this.getContractState(txId).then((result: node.ContractState) => {
       return result.fields.length - 6
     })
   }
 
   async getNetworkType(): Promise<NetworkType> {
-    return this.fetch(this.api.infos.getInfosChainParams()).then((tResult) => {
-      if (tResult.networkId == 0) {
-        return NetworkType.MAINNET
-      } else if (tResult.networkId == 1) {
-        return NetworkType.TESTNET
-      } else {
-        return NetworkType.UNKNOWN
-      }
-    })
+    const tResult = convertHttpResponse(await this.api.infos.getInfosChainParams())
+    if (tResult.networkId == 0) {
+      return NetworkType.MAINNET
+    } else if (tResult.networkId == 1) {
+      return NetworkType.TESTNET
+    } else {
+      return NetworkType.UNKNOWN
+    }
   }
 }
 

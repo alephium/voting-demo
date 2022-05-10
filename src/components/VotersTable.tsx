@@ -1,3 +1,4 @@
+import React from 'react'
 import { Address } from '../util/types'
 import { Alert, ALERT_PROPS } from './Alert'
 import { Button } from './Common'

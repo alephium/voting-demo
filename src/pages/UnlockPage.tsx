@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactModal from 'react-modal'
 import styled from 'styled-components'
 import { QRCodeSVG } from 'qrcode.react'
