@@ -77,7 +77,7 @@ const App = () => {
 
     const provider = new WalletConnectProvider({
       networkId: NETWORK_ID,
-      chainGroup: -1, // -1 means all groups are acceptable
+      chainGroup: -1, // -1 means all groups, 0/1/2/3 means only the specific group is allowed
       client: walletConnect
     })
 
