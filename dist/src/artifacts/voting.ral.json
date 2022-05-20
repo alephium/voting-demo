@@ -1,11 +1,11 @@
 {
-    "sourceCodeSha256": "9390351438f017789a71eee929a74cd9c15786703c3bbe9fcb475a8e86522445",
+    "sourceCodeSha256": "808f69ff053acac67ca9669975d77715507abbbb91a5734e3bdd4c880fec4564",
     "compiled": {
         "type": "SimpleContractByteCode",
-        "bytecode": "0803403e4074408d01010000001fa004041c4d0c59a005454da005a00613c22d79883d2000a7a005a00713c22d79883d2000a7a006b10daba007b10dab0ca1010ca10203a10401010202001da004031ca003041c1a4d1601a00513c22d79883d2000a71601b10dac1600031c4c05a0010d2aa1014a04a0020d2aa10201000000000fa004031ca003041c1a4d0c59a005454d03a103"
+        "bytecode": "0703402c4062407b010100000017a004041c4d0c59a005454da005a00613c22d79883d2000a7a006b10dab0ca1010ca10203a10401010202001da004031ca003041c1a4d1601a00513c22d79883d2000a71601b10dac1600031c4c05a0010d2aa1014a04a0020d2aa10201000000000fa004031ca003041c1a4d0c59a005454d03a103"
     },
     "fields": {
-        "signature": "TxContract Voting(title:ByteVec,mut yes:U256,mut no:U256,mut isClosed:Bool,mut initialized:Bool,admin:Address,voters:[Address;2])",
+        "signature": "TxContract Voting(title:ByteVec,mut yes:U256,mut no:U256,mut isClosed:Bool,mut initialized:Bool,admin:Address,voters:[Address;1])",
         "types": [
             "ByteVec",
             "U256",
@@ -13,7 +13,7 @@
             "Bool",
             "Bool",
             "Address",
-            "[Address;2]"
+            "[Address;1]"
         ]
     },
     "functions": [

@@ -19,6 +19,6 @@ var Results = function (_a) {
             setTitle(title);
         });
     }
-    return (_jsxs(Container, { children: [_jsx("p", { children: "The vote is already closed, here are the results:" }, void 0), _jsx("p", { children: title }, void 0), _jsxs("p", { children: ["Yes: ", yes] }, void 0), _jsxs("p", { children: ["No: ", no] }, void 0)] }, void 0));
+    return (_jsxs(Container, { children: [_jsx("p", { children: "The vote is already closed, here are the results:" }), _jsx("p", { children: title }), _jsxs("p", { children: ["Yes: ", yes] }), _jsxs("p", { children: ["No: ", no] })] }));
 };
 export default Results;

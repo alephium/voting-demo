@@ -75,7 +75,6 @@ var SubmitVote = function (_a) {
             pollTxStatus(interval_1, txResult);
             return function () { return clearInterval(interval_1); };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [txResult]);
     var vote = function (choice) { return __awaiter(void 0, void 0, void 0, function () {
         var params, result;
@@ -85,11 +84,11 @@ var SubmitVote = function (_a) {
                     if (!(contractRef && context.apiClient && contractTxId)) return [3 /*break*/, 3];
                     return [4 /*yield*/, votingScript.paramsForDeployment({
                             signerAddress: context.accounts[0].address,
-                            templateVariables: { contractId: contractRef.tokenId, tokenId: contractRef.tokenId, choice: choice }
+                            initialFields: { contractId: contractRef.tokenId, tokenId: contractRef.tokenId, choice: choice }
                         })];
                 case 1:
                     params = _a.sent();
-                    return [4 /*yield*/, context.apiClient.provider.signScriptTx(params)];
+                    return [4 /*yield*/, context.apiClient.provider.signExecuteScriptTx(params)];
                 case 2:
                     result = _a.sent();
                     setResult(result);
@@ -98,6 +97,6 @@ var SubmitVote = function (_a) {
             }
         });
     }); };
-    return (_jsxs("div", { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }, void 0), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type == 'Confirmed' && (_jsxs(Container, __assign({ style: { maxWidth: '400px', textAlign: 'center', lineHeight: '1.5' } }, { children: [_jsx("p", { children: "Thanks for voting!" }, void 0), _jsx("p", { children: "Reload the contract when the administrator has closed the vote to see the results." }, void 0)] }), void 0)), !txResult && (_jsxs(Container, { children: [_jsx("p", { children: title }, void 0), _jsx(Button, __assign({ onClick: function () { return vote(true); } }, { children: "Yes" }), void 0), _jsx(Button, __assign({ onClick: function () { return vote(false); } }, { children: "No" }), void 0)] }, void 0))] }, void 0));
+    return (_jsxs("div", { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type == 'Confirmed' && (_jsxs(Container, __assign({ style: { maxWidth: '400px', textAlign: 'center', lineHeight: '1.5' } }, { children: [_jsx("p", { children: "Thanks for voting!" }), _jsx("p", { children: "Reload the contract when the administrator has closed the vote to see the results." })] }))), !txResult && (_jsxs(Container, { children: [_jsx("p", { children: title }), _jsx(Button, __assign({ onClick: function () { return vote(true); } }, { children: "Yes" })), _jsx(Button, __assign({ onClick: function () { return vote(false); } }, { children: "No" }))] }))] }));
 };
 export default SubmitVote;

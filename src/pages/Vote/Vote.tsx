@@ -4,7 +4,7 @@ import { Container, Button } from '../../components/Common'
 import { Input } from '../../components/Inputs'
 import { ContractRef } from '../../util/client'
 import { useParams } from 'react-router-dom'
-import { ValBool, ValByteVec } from 'alephium-web3/dist/api/api-alephium'
+import { node } from 'alephium-web3/'
 import { catchAndAlert, hexStringToStr } from '../../util/util'
 import Results from './Results'
 import SubmitVote from './SubmitVote'
@@ -36,9 +36,9 @@ const Vote = () => {
       if (contractRef) {
         setContractRef(contractRef)
         context.apiClient.getContractState(contractTxId).then((state) => {
-          const encodedTitle = (state.fields[0] as ValByteVec).value
+          const encodedTitle = (state.fields[0] as node.ValByteVec).value
           setTitle(hexStringToStr(encodedTitle))
-          const isClosed = (state.fields[3] as ValBool).value
+          const isClosed = (state.fields[3] as node.ValBool).value
           setIsClosed(isClosed)
         })
       }

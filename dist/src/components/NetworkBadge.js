@@ -32,10 +32,10 @@ export var NetworkBadge = function (_a) {
             return 'Unreachable node';
         }
     };
-    return (_jsxs("div", __assign({ style: { display: 'flex', flexDirection: 'row', alignItems: 'center' } }, { children: [_jsx(Badge, { children: networkTypeToText(networkType) }, void 0), networkType !== NetworkType.TESTNET && _jsx(DangerLogo, {}, void 0)] }), void 0));
+    return (_jsxs("div", __assign({ style: { display: 'flex', flexDirection: 'row', alignItems: 'center' } }, { children: [_jsx(Badge, { children: networkTypeToText(networkType) }), networkType !== NetworkType.TESTNET && _jsx(DangerLogo, {})] })));
 };
 var DangerLogo = function () {
-    return _jsx(DangerLogoSpan, { children: "\u26A0" }, void 0);
+    return _jsx(DangerLogoSpan, { children: "\u26A0" });
 };
 var DangerLogoSpan = styled.span(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n  color: red;\n  font-size: 25px;\n  margin-left: 10px;\n"], ["\n  color: red;\n  font-size: 25px;\n  margin-left: 10px;\n"])));
 var Badge = styled.button(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n  background-color: white;\n  border-radius: 15px;\n  border-width: 1px;\n  border-style: solid;\n  border-color: #e7e7e7;\n  padding-left: 10px;\n  padding-right: 10px;\n  margin-left: 20px;\n  padding-top: 0px;\n  height: 30px;\n"], ["\n  background-color: white;\n  border-radius: 15px;\n  border-width: 1px;\n  border-style: solid;\n  border-color: #e7e7e7;\n  padding-left: 10px;\n  padding-right: 10px;\n  margin-left: 20px;\n  padding-top: 0px;\n  height: 30px;\n"])));

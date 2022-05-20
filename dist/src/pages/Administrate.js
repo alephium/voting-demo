@@ -88,7 +88,6 @@ var Administrate = function () {
             pollTxStatus(interval_1, txResult);
             return function () { return clearInterval(interval_1); };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [txResult]);
     var allocateTokens = function () { return __awaiter(void 0, void 0, void 0, function () {
         var contractRef, params, result;
@@ -102,11 +101,11 @@ var Administrate = function () {
                     if (!contractRef) return [3 /*break*/, 4];
                     return [4 /*yield*/, tokenAllocationScript.paramsForDeployment({
                             signerAddress: context.accounts[0].address,
-                            templateVariables: { contractId: contractRef.tokenId }
+                            initialFields: { contractId: contractRef.tokenId }
                         })];
                 case 2:
                     params = _a.sent();
-                    return [4 /*yield*/, context.apiClient.provider.signScriptTx(params)];
+                    return [4 /*yield*/, context.apiClient.provider.signExecuteScriptTx(params)];
                 case 3:
                     result = _a.sent();
                     setResult(result);
@@ -129,11 +128,11 @@ var Administrate = function () {
                     if (!contractRef) return [3 /*break*/, 4];
                     return [4 /*yield*/, closingScript.paramsForDeployment({
                             signerAddress: context.accounts[0].address,
-                            templateVariables: { contractId: contractRef.tokenId }
+                            initialFields: { contractId: contractRef.tokenId }
                         })];
                 case 2:
                     params = _a.sent();
-                    return [4 /*yield*/, context.apiClient.provider.signScriptTx(params)];
+                    return [4 /*yield*/, context.apiClient.provider.signExecuteScriptTx(params)];
                 case 3:
                     result = _a.sent();
                     setResult(result);
@@ -144,6 +143,6 @@ var Administrate = function () {
             }
         });
     }); };
-    return (_jsxs(_Fragment, { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }, void 0), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (_jsx(Container, { children: _jsxs("div", __assign({ style: { flexDirection: 'row' } }, { children: ["Share this", _jsx(NavLink, __assign({ to: "/vote/" + contractTxId }, { children: " link " }), void 0), " to the voters."] }), void 0) }, void 0)), (!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (_jsxs(Container, { children: [_jsx(Input, { id: "tx-id", placeholder: "The contract transaction ID", value: contractTxId, onChange: function (e) { return setContractTxId(e.target.value); } }, void 0), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(allocateTokens()); } }, { children: "Allocate Tokens" }), void 0), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(close()); } }, { children: "Close voting" }), void 0)] }, void 0))] }, void 0));
+    return (_jsxs(_Fragment, { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (_jsx(Container, { children: _jsxs("div", __assign({ style: { flexDirection: 'row' } }, { children: ["Share this", _jsx(NavLink, __assign({ to: "/vote/".concat(contractTxId) }, { children: " link " })), " to the voters."] })) })), (!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (_jsxs(Container, { children: [_jsx(Input, { id: "tx-id", placeholder: "The contract transaction ID", value: contractTxId, onChange: function (e) { return setContractTxId(e.target.value); } }), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(allocateTokens()); } }, { children: "Allocate Tokens" })), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(close()); } }, { children: "Close voting" }))] }))] }));
 };
 export default Administrate;

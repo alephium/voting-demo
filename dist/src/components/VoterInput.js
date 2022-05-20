@@ -30,6 +30,6 @@ export var VoterInput = function (_a) {
             alert('Please enter a valid address');
         }
     };
-    return (_jsxs("div", __assign({ style: { display: 'flex', alignItems: 'center' } }, { children: [_jsx(Input, { id: "voterInput", placeholder: "Please enter a voter address", onChange: function (e) { return handleOnChange(e); }, value: voter }, void 0), _jsx(Button, __assign({ onClick: function () { return handleOnClick(); }, style: { marginLeft: '1rem' } }, { children: "+" }), void 0)] }), void 0));
+    return (_jsxs("div", __assign({ style: { display: 'flex', alignItems: 'center' } }, { children: [_jsx(Input, { id: "voterInput", placeholder: "Please enter a voter address", onChange: function (e) { return handleOnChange(e); }, value: voter }), _jsx(Button, __assign({ onClick: function () { return handleOnClick(); }, style: { marginLeft: '1rem' } }, { children: "+" }))] })));
 };
 export default VoterInput;

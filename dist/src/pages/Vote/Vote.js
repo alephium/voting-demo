@@ -92,14 +92,14 @@ var Vote = function () {
             }
         });
     }); };
-    var content = (_jsxs(Container, { children: [_jsx(Input, { id: "txId", placeholder: "The contract transaction ID", value: contractTxId, onChange: function (e) { return setContractTxId(e.target.value); } }, void 0), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(load()); } }, { children: "Load Contract" }), void 0)] }, void 0));
+    var content = (_jsxs(Container, { children: [_jsx(Input, { id: "txId", placeholder: "The contract transaction ID", value: contractTxId, onChange: function (e) { return setContractTxId(e.target.value); } }), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(load()); } }, { children: "Load Contract" }))] }));
     if (isClosed === true) {
         if (context.apiClient) {
-            content = _jsx(Results, { contractTxId: contractTxId }, void 0);
+            content = _jsx(Results, { contractTxId: contractTxId });
         }
     }
     else if (isClosed === false) {
-        content = _jsx(SubmitVote, { contractRef: contractRef, contractTxId: context.cache.currentContractId, title: title }, void 0);
+        content = _jsx(SubmitVote, { contractRef: contractRef, contractTxId: context.cache.currentContractId, title: title });
     }
     return content;
 };

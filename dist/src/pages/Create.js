@@ -130,7 +130,6 @@ export var Create = function () {
             pollTxStatus(interval_1, txResult);
             return function () { return clearInterval(interval_1); };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [txResult]);
     var clear = function () {
         context.editCache(emptyCache());
@@ -154,29 +153,38 @@ export var Create = function () {
                     return [2 /*return*/, Promise.reject('Please Provide an administrator address')];
                 case 2:
                     setIsLoading(true);
-                    console.log("======== params0 " + JSON.stringify(context.accounts));
-                    console.log("======== " + JSON.stringify(votingContract));
+                    console.log("======== params0 ".concat(JSON.stringify(context.accounts)));
+                    console.log("======== ".concat(JSON.stringify(votingContract)));
                     return [4 /*yield*/, votingContract.paramsForDeployment({
                             signerAddress: context.accounts[0].address,
-                            initialFields: [stringToHex(title), 0, 0, false, false, admin === null || admin === void 0 ? void 0 : admin.address, voters.map(function (voter) { return voter.address; })],
+                            initialFields: {
+                                title: stringToHex(title),
+                                yes: 0,
+                                no: 0,
+                                isClosed: false,
+                                initialized: false,
+                                admin: admin === null || admin === void 0 ? void 0 : admin.address,
+                                voters: voters.map(function (voter) { return voter.address; })
+                            },
                             issueTokenAmount: voters.length
                         })];
                 case 3:
                     params = _a.sent();
-                    console.log("======== params1");
-                    return [4 /*yield*/, context.apiClient.provider.signContractCreationTx(params)];
+                    console.log("======== params1, ".concat(JSON.stringify(params)));
+                    return [4 /*yield*/, context.apiClient.provider.signDeployContractTx(params)];
                 case 4:
                     result = _a.sent();
                     if (result) {
                         setResult(result);
                     }
+                    console.log("======= ".concat(JSON.stringify(result)));
                     setIsLoading(false);
                     _a.label = 5;
                 case 5: return [2 /*return*/];
             }
         });
     }); };
-    return (_jsxs(_Fragment, { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }, void 0), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type == 'Confirmed' && (_jsxs(_Fragment, { children: [_jsx(Button, { children: _jsx(NavLink, __assign({ to: "/administrate/" + txResult.txId }, { children: "Allocate voting tokens" }), void 0) }, void 0), _jsx(Button, __assign({ onClick: clear }, { children: "Create another poll" }), void 0)] }, void 0)), !txResult && (_jsxs(Container, { children: [_jsx(Input, { id: "voting-title", placeholder: "Subject to vote on", value: title, onChange: function (e) { return setTitle(e.target.value); } }, void 0), _jsxs(AddressInput, { children: [_jsx(Input, { id: "admin-address", placeholder: "The administrator address", value: admin != undefined ? admin.address : '', onChange: function (e) { return updateAdmin(e.target.value); } }, void 0), _jsx(AddressGroup, { children: admin !== undefined && admin.address !== '' && 'G' + admin.group }, void 0)] }, void 0), _jsx(VotersTable, { voters: voters, removeVoter: removeVoter, admin: admin }, void 0), _jsx(VoterInput, { addVoter: addVoter }, void 0), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(submit()); } }, { children: "Create" }), void 0), isLoading && _jsx("div", { children: "Waiting for wallet response..." }, void 0)] }, void 0))] }, void 0));
+    return (_jsxs(_Fragment, { children: [txStatus && (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && _jsx(TxStatusSnackBar, { txStatus: txStatus, txId: txResult.txId }), (txResult === null || txResult === void 0 ? void 0 : txResult.txId) && typedStatus && typedStatus.type == 'Confirmed' && (_jsxs(_Fragment, { children: [_jsx(Button, { children: _jsx(NavLink, __assign({ to: "/administrate/".concat(txResult.txId) }, { children: "Allocate voting tokens" })) }), _jsx(Button, __assign({ onClick: clear }, { children: "Create another poll" }))] })), !txResult && (_jsxs(Container, { children: [_jsx(Input, { id: "voting-title", placeholder: "Subject to vote on", value: title, onChange: function (e) { return setTitle(e.target.value); } }), _jsxs(AddressInput, { children: [_jsx(Input, { id: "admin-address", placeholder: "The administrator address", value: admin != undefined ? admin.address : '', onChange: function (e) { return updateAdmin(e.target.value); } }), _jsx(AddressGroup, { children: admin !== undefined && admin.address !== '' && 'G' + admin.group })] }), _jsx(VotersTable, { voters: voters, removeVoter: removeVoter, admin: admin }), _jsx(VoterInput, { addVoter: addVoter }), _jsx(Button, __assign({ onClick: function () { return catchAndAlert(submit()); } }, { children: "Create" })), isLoading && _jsx("div", { children: "Waiting for wallet response..." })] }))] }));
 };
 export default Create;
 var templateObject_1, templateObject_2;

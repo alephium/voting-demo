@@ -27,13 +27,13 @@ export var TxStatusSnackBar = function (_a) {
             return null;
         }
         else if (status.type === 'Confirmed') {
-            return (_jsx(StyledDiv, { children: _jsxs(Alert, __assign({ color: ALERT_PROPS.SUCCESS.color, backgroundColor: ALERT_PROPS.SUCCESS.backgroundColor }, { children: [_jsx("a", __assign({ href: context.settings.explorerURL + "/#/transactions/" + txId, target: "_blank", rel: "noopener noreferrer" }, { children: "Transaction" }), void 0), "\u00A0 Confirmed!"] }), void 0) }, void 0));
+            return (_jsx(StyledDiv, { children: _jsxs(Alert, __assign({ color: ALERT_PROPS.SUCCESS.color, backgroundColor: ALERT_PROPS.SUCCESS.backgroundColor }, { children: [_jsx("a", __assign({ href: "".concat(context.settings.explorerURL, "/#/transactions/").concat(txId), target: "_blank", rel: "noopener noreferrer" }, { children: "Transaction" })), "\u00A0 Confirmed!"] })) }));
         }
         else if (status.type === 'MemPooled') {
-            return (_jsx(StyledDiv, { children: _jsxs(Alert, __assign({ color: ALERT_PROPS.WARNING.color, backgroundColor: ALERT_PROPS.WARNING.backgroundColor }, { children: ["Pending\u00A0", _jsx("a", __assign({ href: context.settings.explorerURL + "/#/transactions/" + txId, target: "_blank", rel: "noopener noreferrer" }, { children: "transaction." }), void 0), "\u00A0 Please wait.."] }), void 0) }, void 0));
+            return (_jsx(StyledDiv, { children: _jsxs(Alert, __assign({ color: ALERT_PROPS.WARNING.color, backgroundColor: ALERT_PROPS.WARNING.backgroundColor }, { children: ["Pending\u00A0", _jsx("a", __assign({ href: "".concat(context.settings.explorerURL, "/#/transactions/").concat(txId), target: "_blank", rel: "noopener noreferrer" }, { children: "transaction." })), "\u00A0 Please wait.."] })) }));
         }
         else {
-            return (_jsx(StyledDiv, { children: _jsx(Alert, __assign({ color: ALERT_PROPS.DANGER.color, backgroundColor: ALERT_PROPS.DANGER.backgroundColor }, { children: "Transaction not found" }), void 0) }, void 0));
+            return (_jsx(StyledDiv, { children: _jsx(Alert, __assign({ color: ALERT_PROPS.DANGER.color, backgroundColor: ALERT_PROPS.DANGER.backgroundColor }, { children: "Transaction not found" })) }));
         }
     };
     return getMessage();

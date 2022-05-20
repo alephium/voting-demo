@@ -34,21 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-// import {
-//   Api,
-//   ApiConfig,
-//   TxResult,
-//   HttpResponse,
-//   ServiceUnavailable,
-//   InternalServerError,
-//   NotFound,
-//   Unauthorized,
-//   BadRequest,
-//   TxStatus,
-//   Confirmed,
-//   ContractState
-// } from 'alephium-web3/dist/api/api-alephium'
-import { convertHttpResponse, node } from 'alephium-web3';
+import { node } from 'alephium-web3';
 import { loadSettingsOrDefault } from './settings';
 import { NetworkType } from './types';
 export var CONTRACTGAS = 6000000;
@@ -56,23 +42,19 @@ var Client = /** @class */ (function () {
     function Client(baseUrl, walletConnect, provider) {
         var _this = this;
         this.getContractRef = function (txId) { return __awaiter(_this, void 0, void 0, function () {
-            var txStatus, _a, confirmed, block, _b, tx, contractOutput, contractAddress, tokenId;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        _a = convertHttpResponse;
-                        return [4 /*yield*/, this.api.transactions.getTransactionsStatus({
-                                txId: txId
-                            })];
-                    case 1: return [4 /*yield*/, _a.apply(void 0, [_c.sent()])];
-                    case 2:
-                        txStatus = _c.sent();
-                        if (!('blockHash' in txStatus)) return [3 /*break*/, 4];
+            var txStatus, confirmed, block, tx, contractOutput, contractAddress, tokenId;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.api.transactions.getTransactionsStatus({
+                            txId: txId
+                        })];
+                    case 1:
+                        txStatus = _a.sent();
+                        if (!('blockHash' in txStatus)) return [3 /*break*/, 3];
                         confirmed = txStatus;
-                        _b = convertHttpResponse;
                         return [4 /*yield*/, this.api.blockflow.getBlockflowBlocksBlockHash(confirmed.blockHash)];
-                    case 3:
-                        block = _b.apply(void 0, [_c.sent()]);
+                    case 2:
+                        block = _a.sent();
                         tx = block.transactions.find(function (tx) { return tx.unsigned.txId === txId; });
                         if (tx) {
                             contractOutput = tx.generatedOutputs.find(function (output) { return !('locktime' in output); });
@@ -98,26 +80,23 @@ var Client = /** @class */ (function () {
                         else {
                             return [2 /*return*/, Promise.reject('No contract found')];
                         }
-                        return [3 /*break*/, 5];
-                    case 4: return [2 /*return*/, Promise.reject('Not confirmed yet')];
-                    case 5: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 3: return [2 /*return*/, Promise.reject('Not confirmed yet')];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); };
         this.getContractState = function (txId) { return __awaiter(_this, void 0, void 0, function () {
-            var contractRef, group, _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var contractRef, group;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getContractRef(txId)];
                     case 1:
-                        contractRef = _c.sent();
-                        _a = convertHttpResponse;
+                        contractRef = _a.sent();
                         return [4 /*yield*/, this.api.addresses.getAddressesAddressGroup(contractRef.contractAddress)];
                     case 2:
-                        group = _a.apply(void 0, [_c.sent()]);
-                        _b = convertHttpResponse;
-                        return [4 /*yield*/, this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group })];
-                    case 3: return [2 /*return*/, _b.apply(void 0, [_c.sent()])];
+                        group = _a.sent();
+                        return [2 /*return*/, this.api.contracts.getContractsAddressState(contractRef.contractAddress, { group: group.group })];
                 }
             });
         }); };
@@ -153,19 +132,19 @@ var Client = /** @class */ (function () {
     //   }
     //   return result.data
     // }
-    Client.prototype.deployContract = function (fromAddress, contract, state, issueTokenAmount) {
+    Client.prototype.deployContract = function (fromAddress, contract, fields, issueTokenAmount) {
         return __awaiter(this, void 0, void 0, function () {
             var params;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, contract.paramsForDeployment({
                             signerAddress: fromAddress,
-                            initialFields: state,
+                            initialFields: fields,
                             issueTokenAmount: issueTokenAmount
                         })];
                     case 1:
                         params = _a.sent();
-                        return [2 /*return*/, this.provider.signContractCreationTx(params)];
+                        return [2 /*return*/, this.provider.signDeployContractTx(params)];
                 }
             });
         });
@@ -179,36 +158,27 @@ var Client = /** @class */ (function () {
                     bytecode: bytecode,
                     submitTx: true
                 };
-                return [2 /*return*/, this.provider.signScriptTx(params)];
+                return [2 /*return*/, this.provider.signExecuteScriptTx(params)];
             });
         });
     };
     Client.prototype.getTxStatus = function (txId) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = convertHttpResponse;
-                        return [4 /*yield*/, this.api.transactions.getTransactionsStatus({
-                                txId: txId
-                            })];
-                    case 1: return [4 /*yield*/, _a.apply(void 0, [_b.sent()])];
-                    case 2: return [2 /*return*/, _b.sent()];
-                }
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.api.transactions.getTransactionsStatus({
+                        txId: txId
+                    })];
             });
         });
     };
     Client.prototype.getNetworkType = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var tResult, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = convertHttpResponse;
-                        return [4 /*yield*/, this.api.infos.getInfosChainParams()];
+            var tResult;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.api.infos.getInfosChainParams()];
                     case 1:
-                        tResult = _a.apply(void 0, [_b.sent()]);
+                        tResult = _a.sent();
                         if (tResult.networkId == 0) {
                             return [2 /*return*/, NetworkType.MAINNET];
                         }

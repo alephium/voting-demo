@@ -1,6 +1,6 @@
-import { CliqueClient, Contract, Script } from 'alephium-web3'
+import { NodeProvider, Contract, Script } from 'alephium-web3'
 
-const client = new CliqueClient({ baseUrl: 'http://127.0.0.1:22973' })
+const client = new NodeProvider('http://127.0.0.1:22973')
 Contract.fromSource(client, 'voting.ral')
 Script.fromSource(client, 'token_allocation.ral')
 Script.fromSource(client, 'voting_script.ral')

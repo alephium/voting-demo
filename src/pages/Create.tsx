@@ -4,7 +4,7 @@ import { Input } from '../components/Inputs'
 import { useContext } from 'react'
 import styled from 'styled-components'
 import { GlobalContext } from '../App'
-import { SignContractCreationTxResult, SignResult, stringToHex } from 'alephium-web3'
+import { SignDeployContractTxParams, SignDeployContractTxResult, SignResult, stringToHex } from 'alephium-web3'
 import { votingContract } from '../util/voting'
 import { useEffect } from 'react'
 import { node } from 'alephium-web3'
@@ -36,7 +36,7 @@ export const Create = () => {
   const context = useContext(GlobalContext)
   const [voters, setVoters] = useState<Address[]>([])
   const [admin, setAdmin] = useState<Address | undefined>(undefined)
-  const [txResult, setResult] = useState<SignContractCreationTxResult | undefined>(context.cache.createTxResult)
+  const [txResult, setResult] = useState<SignDeployContractTxResult | undefined>(context.cache.createTxResult)
   const [txStatus, setStatus] = useState<node.TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
@@ -112,11 +112,19 @@ export const Create = () => {
         console.log(`======== ${JSON.stringify(votingContract)}`)
         const params = await votingContract.paramsForDeployment({
           signerAddress: context.accounts[0].address,
-          initialFields: [stringToHex(title), 0, 0, false, false, admin?.address, voters.map((voter) => voter.address)],
+          initialFields: {
+            title: stringToHex(title),
+            yes: 0,
+            no: 0,
+            isClosed: false,
+            initialized: false,
+            admin: admin?.address,
+            voters: voters.map((voter) => voter.address)
+          },
           issueTokenAmount: voters.length
         })
         console.log(`======== params1, ${JSON.stringify(params)}`)
-        const result = await context.apiClient.provider.signContractCreationTx(params)
+        const result = await context.apiClient.provider.signDeployContractTx(params)
         if (result) {
           setResult(result)
         }

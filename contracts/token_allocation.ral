@@ -1,10 +1,8 @@
 import "voting.ral"
 
-TxScript TokenAllocation<contractId: ByteVec> {
-    pub payable fn main() -> () {
-        let voting = Voting(contractId)
-        let caller = txCaller!(0)
-        approveAlph!(caller, 50000000000000 * 2)
-        voting.allocateTokens()
-    }
+TxScript TokenAllocation(contractId: ByteVec) {
+    let voting = Voting(contractId)
+    let caller = txCaller!(0)
+    approveAlph!(caller, 50000000000000 * 2)
+    voting.allocateTokens()
 }

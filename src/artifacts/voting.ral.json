@@ -1,11 +1,18 @@
 {
   "sourceCodeSha256": "808f69ff053acac67ca9669975d77715507abbbb91a5734e3bdd4c880fec4564",
-  "compiled": {
-    "type": "SimpleContractByteCode",
-    "bytecode": "0703402c4062407b010100000017a004041c4d0c59a005454da005a00613c22d79883d2000a7a006b10dab0ca1010ca10203a10401010202001da004031ca003041c1a4d1601a00513c22d79883d2000a71601b10dac1600031c4c05a0010d2aa1014a04a0020d2aa10201000000000fa004031ca003041c1a4d0c59a005454d03a103"
-  },
-  "fields": {
+  "bytecode": "0703402c4062407b010100000017a004041c4d0c59a005454da005a00613c22d79883d2000a7a006b10dab0ca1010ca10203a10401010202001da004031ca003041c1a4d1601a00513c22d79883d2000a71601b10dac1600031c4c05a0010d2aa1014a04a0020d2aa10201000000000fa004031ca003041c1a4d0c59a005454d03a103",
+  "codeHash": "a627d39fb3afac35a351e07dd7a5c9354503e5a354428d0ff7abbfbe5f442f9b",
+  "fieldsSig": {
     "signature": "TxContract Voting(title:ByteVec,mut yes:U256,mut no:U256,mut isClosed:Bool,mut initialized:Bool,admin:Address,voters:[Address;1])",
+    "names": [
+      "title",
+      "yes",
+      "no",
+      "isClosed",
+      "initialized",
+      "admin",
+      "voters"
+    ],
     "types": [
       "ByteVec",
       "U256",
@@ -16,16 +23,22 @@
       "[Address;1]"
     ]
   },
+  "eventsSig": [],
   "functions": [
     {
       "name": "allocateTokens",
       "signature": "pub payable allocateTokens()->()",
+      "argNames": [],
       "argTypes": [],
       "returnTypes": []
     },
     {
       "name": "vote",
       "signature": "pub payable vote(choice:Bool,voter:Address)->()",
+      "argNames": [
+        "choice",
+        "voter"
+      ],
       "argTypes": [
         "Bool",
         "Address"
@@ -35,9 +48,9 @@
     {
       "name": "close",
       "signature": "pub close()->()",
+      "argNames": [],
       "argTypes": [],
       "returnTypes": []
     }
-  ],
-  "events": []
+  ]
 }

@@ -1,4 +1,4 @@
-import { ValByteVec, ValU256 } from 'alephium-web3/dist/api/api-alephium'
+import { node } from 'alephium-web3'
 import React, { useContext, useState } from 'react'
 import { GlobalContext } from '../../App'
 import { Container } from '../../components/Common'
@@ -16,9 +16,9 @@ const Results = ({ contractTxId }: ResultsProps) => {
 
   if (context.apiClient) {
     context.apiClient.getContractState(contractTxId).then((state) => {
-      const title = hexStringToStr((state.fields[0] as ValByteVec).value)
-      const tmpYes = state.fields[1] as ValU256
-      const tmpNo = state.fields[2] as ValU256
+      const title = hexStringToStr((state.fields[0] as node.ValByteVec).value)
+      const tmpYes = state.fields[1] as node.ValU256
+      const tmpNo = state.fields[2] as node.ValU256
       setYes(tmpYes.value)
       setNo(tmpNo.value)
       setTitle(title)

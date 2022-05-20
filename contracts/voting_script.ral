@@ -1,11 +1,9 @@
 import "voting.ral"
 
-TxScript VotingScript<contractId: ByteVec, tokenId: ByteVec, choice: Bool> {
-    pub payable fn main() -> () {
-        let caller = txCaller!(0)
-        let voting = Voting(contractId)
-        approveToken!(caller, tokenId, 1)
-        approveAlph!(caller, 50000000000000)
-        voting.vote(choice, caller)
-    }
+TxScript VotingScript(contractId: ByteVec, tokenId: ByteVec, choice: Bool) {
+    let caller = txCaller!(0)
+    let voting = Voting(contractId)
+    approveToken!(caller, tokenId, 1)
+    approveAlph!(caller, 50000000000000)
+    voting.vote(choice, caller)
 }

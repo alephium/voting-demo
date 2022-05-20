@@ -8,7 +8,7 @@ import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
 import { tokenAllocationScript, closingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Action, TypedStatus } from '../util/types'
-import { SignScriptTxResult } from 'alephium-web3'
+import { SignExecuteScriptTxResult } from 'alephium-web3'
 
 type Params = {
   txId?: string
@@ -25,12 +25,12 @@ const Administrate = () => {
     return initTxId
   }
   const [contractTxId, setContractTxId] = useState<string>(getInitTxId())
-  const [txResult, setResult] = useState<SignScriptTxResult | undefined>(context.cache.administrateTxResult)
+  const [txResult, setResult] = useState<SignExecuteScriptTxResult | undefined>(context.cache.administrateTxResult)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [lastAction, setLastAction] = useState<Action | undefined>(context.cache.administrateAction)
 
-  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignScriptTxResult) => {
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignExecuteScriptTxResult) => {
     context.apiClient?.getTxStatus(txResult.txId).then((fetchedStatus) => {
       setTxStatus(fetchedStatus)
       const status = fetchedStatus as TypedStatus
@@ -56,9 +56,9 @@ const Administrate = () => {
       if (contractRef) {
         const params = await tokenAllocationScript.paramsForDeployment({
           signerAddress: context.accounts[0].address,
-          templateVariables: { contractId: contractRef.tokenId }
+          initialFields: { contractId: contractRef.tokenId }
         })
-        const result = await context.apiClient.provider.signScriptTx(params)
+        const result = await context.apiClient.provider.signExecuteScriptTx(params)
         setResult(result)
         setLastAction(Action.Allocate)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
@@ -71,9 +71,9 @@ const Administrate = () => {
       if (contractRef) {
         const params = await closingScript.paramsForDeployment({
           signerAddress: context.accounts[0].address,
-          templateVariables: { contractId: contractRef.tokenId }
+          initialFields: { contractId: contractRef.tokenId }
         })
-        const result = await context.apiClient.provider.signScriptTx(params)
+        const result = await context.apiClient.provider.signExecuteScriptTx(params)
         setResult(result)
         setLastAction(Action.Close)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
