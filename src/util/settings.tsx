@@ -1,14 +1,12 @@
 export interface Settings {
-  walletName: string
-  password: string
+  network: string
   nodeHost: string
   explorerURL: string
 }
 
 export function defaultSettings(): Settings {
   return {
-    walletName: 'wallet-1',
-    password: 'my-secret-password',
+    network: 'testnet',
     nodeHost: 'http://127.0.0.1:12973',
     explorerURL: 'https://testnet.alephium.org'
   }

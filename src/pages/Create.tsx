@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Container, Button } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { useContext } from 'react'
+import styled from 'styled-components'
 import { GlobalContext } from '../App'
-import { createContract, initialContractState } from '../util/voting'
-import { CONTRACTGAS } from '../util/client'
+import { SignDeployContractTxParams, SignDeployContractTxResult, SignResult, stringToHex } from 'alephium-web3'
+import { votingContract } from '../util/voting'
 import { useEffect } from 'react'
-import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
-import { addressToGroup } from 'alephium-js/dist/lib/address'
+import { node } from 'alephium-web3'
+import { addressToGroup } from 'alephium-web3'
 import { NavLink } from 'react-router-dom'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Address, emptyCache, TypedStatus } from '../util/types'
@@ -16,14 +17,30 @@ import VoterInput from '../components/VoterInput'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
 const totalNumberOfGroups = 4
 
+const AddressInput = styled.div`
+  display: flex;
+`
+
+const AddressGroup = styled.div`
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 700;
+  margin: 1rem 0rem 1rem 0rem;
+  border-radius: 12px;
+  width: 3.7rem;
+  height: 3.2rem;
+  text-align: center;
+  line-height: 3.2rem;
+`
+
 export const Create = () => {
   const context = useContext(GlobalContext)
   const [voters, setVoters] = useState<Address[]>([])
   const [admin, setAdmin] = useState<Address | undefined>(undefined)
-  const [txResult, setResult] = useState<TxResult | undefined>(context.cache.createTxResult)
-  const [txStatus, setStatus] = useState<TxStatus | undefined>(undefined)
+  const [txResult, setResult] = useState<SignDeployContractTxResult | undefined>(context.cache.createTxResult)
+  const [txStatus, setStatus] = useState<node.TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [title, setTitle] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   function addressFromString(address: string): Address {
     const group = addressToGroup(address, totalNumberOfGroups)
@@ -49,7 +66,7 @@ export const Create = () => {
     setVoters(newVoters)
   }
 
-  const pollTxStatus = (interval: NodeJS.Timeout, txResult: TxResult) => {
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignResult) => {
     context.apiClient?.getTxStatus(txResult?.txId).then((fetchedStatus) => {
       setStatus(fetchedStatus)
       const status = fetchedStatus as TypedStatus
@@ -71,7 +88,6 @@ export const Create = () => {
       pollTxStatus(interval, txResult)
       return () => clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const clear = () => {
@@ -91,68 +107,68 @@ export const Create = () => {
       } else if (admin == undefined) {
         return Promise.reject('Please Provide an administrator address')
       } else {
-        const result = await context.apiClient.deployContract(
-          createContract(voters.length),
-          CONTRACTGAS,
-          initialContractState(
-            title,
-            admin?.address,
-            voters.map((voter) => voter.address)
-          ),
-          voters.length.toString()
-        )
+        setIsLoading(true)
+        console.log(`======== params0 ${JSON.stringify(context.accounts)}`)
+        console.log(`======== ${JSON.stringify(votingContract)}`)
+        const params = await votingContract.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          initialFields: {
+            title: stringToHex(title),
+            yes: 0,
+            no: 0,
+            isClosed: false,
+            initialized: false,
+            admin: admin?.address,
+            voters: voters.map((voter) => voter.address)
+          },
+          issueTokenAmount: voters.length
+        })
+        console.log(`======== params1, ${JSON.stringify(params)}`)
+        const result = await context.apiClient.provider.signDeployContractTx(params)
         if (result) {
           setResult(result)
         }
+        console.log(`======= ${JSON.stringify(result)}`)
+        setIsLoading(false)
       }
     }
   }
 
   return (
-    <div>
+    <>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type == 'Confirmed' && (
         <>
-          <Container>
-            <div style={{ flexDirection: 'row' }}>
-              Click <NavLink to={`/administrate/${txResult.txId}`}>here</NavLink> to allocate the tokens to the voters.
-            </div>
-          </Container>
-          <div style={{ display: 'flex', marginTop: '20px', justifyContent: 'center' }}>
-            <Button onClick={clear}>Create a new voting contract</Button>
-          </div>
+          <Button>
+            <NavLink to={`/administrate/${txResult.txId}`}>Allocate voting tokens</NavLink>
+          </Button>
+          <Button onClick={clear}>Create another poll</Button>
         </>
       )}
       {!txResult && (
         <Container>
-          <h2>
-            <label htmlFor="voting-title">Voting Title</label>
-          </h2>
           <Input
             id="voting-title"
-            placeholder="Please enter your question"
+            placeholder="Subject to vote on"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <h2>
-            <label htmlFor="admin-address">Administrator Address</label>
-          </h2>
-          <Input
-            id="admin-address"
-            placeholder="Please enter the administrator address"
-            value={admin != undefined ? admin.address : ''}
-            onChange={(e) => updateAdmin(e.target.value)}
-          />
-          <span style={{ marginLeft: '10px', marginTop: '10px' }}>
-            {admin !== undefined && admin.address !== '' && 'Group: ' + admin.group}
-          </span>
-          <h2>Voters</h2>
+          <AddressInput>
+            <Input
+              id="admin-address"
+              placeholder="The administrator address"
+              value={admin != undefined ? admin.address : ''}
+              onChange={(e) => updateAdmin(e.target.value)}
+            />
+            <AddressGroup>{admin !== undefined && admin.address !== '' && 'G' + admin.group}</AddressGroup>
+          </AddressInput>
           <VotersTable voters={voters} removeVoter={removeVoter} admin={admin} />
           <VoterInput addVoter={addVoter} />
-          <Button onClick={() => catchAndAlert(submit())}>Submit</Button>
+          <Button onClick={() => catchAndAlert(submit())}>Create</Button>
+          {isLoading && <div>Waiting for wallet response...</div>}
         </Container>
       )}
-    </div>
+    </>
   )
 }
 

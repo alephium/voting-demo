@@ -1,0 +1,22 @@
+{
+  "sourceCodeSha256": "b903a235b223af0ff56d0070512f5075b9fac182c89f6d894b303d26987165f9",
+  "bytecodeTemplate": "0101010002000c{0}17000c591701160113c22d79883d20000e2ca216000100",
+  "fieldsSig": {
+    "signature": "TxScript TokenAllocation(contractId:ByteVec)",
+    "names": [
+      "contractId"
+    ],
+    "types": [
+      "ByteVec"
+    ]
+  },
+  "functions": [
+    {
+      "name": "main",
+      "signature": "pub payable main()->()",
+      "argNames": [],
+      "argTypes": [],
+      "returnTypes": []
+    }
+  ]
+}

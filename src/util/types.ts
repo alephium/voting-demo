@@ -1,4 +1,5 @@
 import { TxResult } from 'alephium-js/dist/api/api-alephium'
+import { SignDeployContractTxResult, SignExecuteScriptTxResult } from 'alephium-web3'
 
 export interface Address {
   address: string
@@ -21,9 +22,9 @@ export enum Action {
 
 export interface Cache {
   currentContractId: string
-  createTxResult?: TxResult
-  voteTxResult?: TxResult
-  administrateTxResult?: TxResult
+  createTxResult?: SignDeployContractTxResult
+  voteTxResult?: SignExecuteScriptTxResult
+  administrateTxResult?: SignExecuteScriptTxResult
   administrateAction?: Action
 }
 

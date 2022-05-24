@@ -15,8 +15,8 @@ export const Alert = styled.span<AlertProps>`
   background-color: ${({ backgroundColor }) => backgroundColor};
   width: 100%;
   height: 50px;
-  border: 1px solid;
-  border-radius: 6px;
+  border-radius: 12px;
+  box-shadow: 6px 6px 12px 0 rgb(255 255 255 / 60%) inset, -6px -6px 12px 0 rgb(0 0 0 / 7%) inset;
 `
 
 export const ALERT_PROPS = {

@@ -1,13 +1,14 @@
 import { TxResult, TxStatus } from 'alephium-js/dist/api/api-alephium'
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { GlobalContext } from '../App'
 import { Button, Container } from '../components/Common'
 import { Input } from '../components/Inputs'
 import { TxStatusSnackBar } from '../components/TxStatusSnackBar'
-import { allocateTokenScript, closeVotingScript } from '../util/voting'
+import { tokenAllocationScript, closingScript } from '../util/voting'
 import { catchAndAlert, clearIntervalIfConfirmed } from '../util/util'
 import { Action, TypedStatus } from '../util/types'
+import { SignExecuteScriptTxResult } from 'alephium-web3'
 
 type Params = {
   txId?: string
@@ -24,12 +25,12 @@ const Administrate = () => {
     return initTxId
   }
   const [contractTxId, setContractTxId] = useState<string>(getInitTxId())
-  const [txResult, setResult] = useState<TxResult | undefined>(context.cache.administrateTxResult)
+  const [txResult, setResult] = useState<SignExecuteScriptTxResult | undefined>(context.cache.administrateTxResult)
   const [txStatus, setTxStatus] = useState<TxStatus | undefined>(undefined)
   const [typedStatus, setTypedStatus] = useState<TypedStatus | undefined>(undefined)
   const [lastAction, setLastAction] = useState<Action | undefined>(context.cache.administrateAction)
 
-  const pollTxStatus = (interval: NodeJS.Timeout, txResult: TxResult) => {
+  const pollTxStatus = (interval: NodeJS.Timeout, txResult: SignExecuteScriptTxResult) => {
     context.apiClient?.getTxStatus(txResult.txId).then((fetchedStatus) => {
       setTxStatus(fetchedStatus)
       const status = fetchedStatus as TypedStatus
@@ -47,15 +48,18 @@ const Administrate = () => {
       pollTxStatus(interval, txResult)
       return () => clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [txResult])
 
   const allocateTokens = async () => {
     if (context.apiClient) {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(allocateTokenScript(contractRef, numberVoters)).then(setResult)
+        const params = await tokenAllocationScript.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          initialFields: { contractId: contractRef.tokenId }
+        })
+        const result = await context.apiClient.provider.signExecuteScriptTx(params)
+        setResult(result)
         setLastAction(Action.Allocate)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Allocate })
       }
@@ -65,8 +69,12 @@ const Administrate = () => {
     if (context.apiClient) {
       const contractRef = await context.apiClient.getContractRef(contractTxId).catch((e) => console.log(e))
       if (contractRef) {
-        const numberVoters = await context.apiClient.getNVoters(contractTxId)
-        await context.apiClient.deployScript(closeVotingScript(contractRef, numberVoters)).then(setResult)
+        const params = await closingScript.paramsForDeployment({
+          signerAddress: context.accounts[0].address,
+          initialFields: { contractId: contractRef.tokenId }
+        })
+        const result = await context.apiClient.provider.signExecuteScriptTx(params)
+        setResult(result)
         setLastAction(Action.Close)
         context.editCache({ currentContractId: contractTxId, administrateAction: Action.Close })
       }
@@ -74,7 +82,7 @@ const Administrate = () => {
   }
 
   return (
-    <div>
+    <>
       {txStatus && txResult?.txId && <TxStatusSnackBar txStatus={txStatus} txId={txResult.txId} />}
       {txResult?.txId && typedStatus && typedStatus.type === 'Confirmed' && lastAction === Action.Allocate && (
         <Container>
@@ -85,12 +93,9 @@ const Administrate = () => {
       )}
       {(!txResult || (typedStatus && typedStatus.type === 'Confirmed')) && (
         <Container>
-          <h2>
-            <label htmlFor="tx-id">Contract transaction ID</label>
-          </h2>
           <Input
             id="tx-id"
-            placeholder="Please enter the contract deployment transaction ID"
+            placeholder="The contract transaction ID"
             value={contractTxId}
             onChange={(e) => setContractTxId(e.target.value)}
           />
@@ -98,7 +103,7 @@ const Administrate = () => {
           <Button onClick={() => catchAndAlert(close())}>Close voting</Button>
         </Container>
       )}
-    </div>
+    </>
   )
 }
 

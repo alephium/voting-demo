@@ -1,0 +1,6 @@
+import "voting.ral"
+
+TxScript ClosingScript(contractId: ByteVec) {
+    let voting = Voting(contractId)
+    voting.close()
+}

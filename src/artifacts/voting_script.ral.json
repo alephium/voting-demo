@@ -1,0 +1,26 @@
+{
+  "sourceCodeSha256": "343c6d04b9e385a220236c683c57c2df33a9e4788918d10206bd4dbbdef72db1",
+  "bytecodeTemplate": "010101000200100c591700{0}17011600{1}0da3160013c22d79883d2000a2{2}160016010101",
+  "fieldsSig": {
+    "signature": "TxScript VotingScript(contractId:ByteVec,tokenId:ByteVec,choice:Bool)",
+    "names": [
+      "contractId",
+      "tokenId",
+      "choice"
+    ],
+    "types": [
+      "ByteVec",
+      "ByteVec",
+      "Bool"
+    ]
+  },
+  "functions": [
+    {
+      "name": "main",
+      "signature": "pub payable main()->()",
+      "argNames": [],
+      "argTypes": [],
+      "returnTypes": []
+    }
+  ]
+}

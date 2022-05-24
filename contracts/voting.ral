@@ -1,0 +1,36 @@
+TxContract Voting(
+    title: ByteVec,
+    mut yes: U256,
+    mut no: U256,
+    mut isClosed: Bool,
+    mut initialized: Bool,
+    admin: Address,
+    voters: [Address; 1]
+) {
+    pub payable fn allocateTokens() -> () {
+        assert!(initialized == false)
+        assert!(txCaller!(0) == admin)
+        loop(0, 1, 1, transferAlph!(admin, voters[?], 50000000000000))
+        loop(0, 1, 1, transferTokenFromSelf!(voters[?], selfTokenId!(), 1))
+        yes = 0
+        no = 0
+        initialized = true
+    }
+
+    pub payable fn vote(choice: Bool, voter: Address) -> () {
+        assert!(initialized == true && isClosed == false)
+        transferAlph!(voter, admin, 50000000000000)
+        transferTokenToSelf!(voter, selfTokenId!(), 1)
+        if (choice == true) {
+            yes = yes + 1
+        } else {
+            no = no + 1
+        }
+    }
+
+    pub fn close() -> () {
+        assert!(initialized == true && isClosed == false)
+        assert!(txCaller!(0) == admin)
+        isClosed = true
+    }
+}

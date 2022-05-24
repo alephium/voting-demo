@@ -1,3 +1,4 @@
+import React from 'react'
 import { Address } from '../util/types'
 import { Alert, ALERT_PROPS } from './Alert'
 import { Button } from './Common'
@@ -9,7 +10,7 @@ interface VotersTableProps {
 }
 export const VotersTable = ({ voters, removeVoter, admin }: VotersTableProps) => {
   return voters.length > 0 ? (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
       <table>
         <thead>
           <tr>

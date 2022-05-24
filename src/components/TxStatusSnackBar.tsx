@@ -1,11 +1,12 @@
-import { TxStatus } from 'alephium-js/dist/api/api-alephium'
+import React from 'react'
+import { node } from 'alephium-web3'
 import { useContext } from 'react'
 import styled from 'styled-components'
 import { GlobalContext } from '../App'
 import { TypedStatus } from '../util/types'
 import { Alert, ALERT_PROPS } from './Alert'
 interface TxStatusSnackBarProps {
-  txStatus: TxStatus
+  txStatus: node.TxStatus
   txId: string
 }
 

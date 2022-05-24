@@ -16,21 +16,18 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
   const { settings, setSettings } = useContext(GlobalContext)
 
   const [tempSettings, setTempSettings] = useState<Settings>({
-    walletName: settings.walletName,
-    password: settings.password,
+    network: settings.network,
     nodeHost: settings.nodeHost,
     explorerURL: settings.explorerURL
   })
 
-  const isWalletNameValid = isNotEmpty
-  const isPasswordValid = isNotEmpty
+  const isNetworkNameValid = isNotEmpty
   const isNodeHostValid = isNotEmpty
   const isExplorerURLValid = isNotEmpty
 
   const handleOnClick = () => {
     if (
-      isWalletNameValid(tempSettings.walletName) &&
-      isPasswordValid(tempSettings.password) &&
+      isNetworkNameValid(tempSettings.network) &&
       isNodeHostValid(tempSettings.nodeHost) &&
       isExplorerURLValid(tempSettings.explorerURL)
     ) {
@@ -57,21 +54,12 @@ const SettingsPage = ({ isModalOpen, handleCloseModal }: SettingsPageProps) => {
       <Container>
         <h1>Wallet SettingsPage</h1>
 
-        <label htmlFor="walletName">Wallet Name</label>
+        <label htmlFor="network">Network</label>
         <Input
-          id="walletName"
-          placeholder="my wallet"
-          value={tempSettings.walletName}
-          onChange={(e) => editSettings({ walletName: e.target.value })}
-        />
-
-        <label htmlFor="walletPassword">Wallet Password</label>
-        <Input
-          id="walletPassword"
-          type="password"
-          placeholder="my-secret-password"
-          value={tempSettings.password}
-          onChange={(e) => editSettings({ password: e.target.value })}
+          id="network"
+          placeholder="mainnet"
+          value={tempSettings.network}
+          onChange={(e) => editSettings({ network: e.target.value })}
         />
 
         <label htmlFor="nodeHost">Node Address</label>
